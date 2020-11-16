@@ -4,14 +4,12 @@ public class Professor {
    private String name;
    private String department;
    private Course[] courses;
-   private Student[] classList;
    
-   public Professor(int uidIn, String nameIn, String departmentIn, Course[] coursesIn, Student[] classListIn) {
+   public Professor(int uidIn, String nameIn, String departmentIn, Course[] coursesIn) {
       uid = uidIn;
       name = nameIn;
       department = departmentIn;
       courses = coursesIn;
-      classList = classListIn;
    }
    
    public int getUID() {
@@ -28,9 +26,5 @@ public class Professor {
    
    public Course[] getCourses() {
       return courses;
-   }
-   
-   public Student[] getClassList() {
-      return classList;
    }
 }
