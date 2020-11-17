@@ -7,22 +7,22 @@ public class Course {
    private int courseNumber;
    private String classTime;
    private Professor instructor;
+   private int instructorID;
    private String instructMethod;
    private String courseLocation;
    private Student[] classList;
    
    public Course(int crnIn, int creditHoursIn, String courseNameIn, String courseSubjectIn, int courseNumberIn,
-      String classTimeIn, Professor instructorIn, String instructMethodIn, String courseLocationIn, Student[] classListIn) {
+      String classTimeIn, int instructorIDIn, String instructMethodIn, String courseLocationIn) {
       crn = crnIn;
       creditHours = creditHoursIn;
       courseName = courseNameIn;
       courseSubject = courseSubjectIn;
       courseNumber = courseNumberIn;
       classTime = classTimeIn;
-      instructor = instructorIn;
+      instructorID = instructorIDIn;
       instructMethod = instructMethodIn;
       courseLocation = courseLocationIn;
-      classList = classListIn;
    }
    
    // To-do
@@ -43,7 +43,7 @@ public class Course {
       return instructor;
    }
    
-   public Student[] getClassList() {
-      return classList;
+   public Student[] getClassList(){
+	return null;
    }
 }
