@@ -1,7 +1,8 @@
 public class Student {
  
    private int uid;
-   private String name;
+   private String firstName;
+   private String lastName;
    private String major;
    private Course[] currentCourses;
    private Course[] allCourses;
@@ -9,19 +10,19 @@ public class Student {
    private float currentGPA;
    private char[] currentGrades;
    
-   public Student(int uidIn, String nameIn, String majorIn) {
+   public Student(int uidIn, String firstNameIn, String lastNameIn, String majorIn) {
       uid = uidIn;
-      name = nameIn;
+      firstName = firstNameIn;
+      lastName = lastNameIn;
       major = majorIn;
    }
    
-   public Student(int uidIn, String nameIn, String majorIn, Course[] currentCoursesIn, Course[] allCoursesIn,
+   public Student(int uidIn, String firstNameIn, String lastNameIn, String majorIn,
       int totalCreditHoursIn, float currentGPAIn, char[] currentGradesIn) {
       uid = uidIn;
-      name = nameIn;
+      firstName = firstNameIn;
+      lastName = lastNameIn;
       major = majorIn;
-      currentCourses = currentCoursesIn;
-      allCourses = allCoursesIn;
       totalCreditHours = totalCreditHoursIn;
       currentGPA = currentGPAIn;
       currentGrades = currentGradesIn;
@@ -31,8 +32,12 @@ public class Student {
       return uid;
    }
    
-   public String getName() {
-      return name;
+   public String getFirstName() {
+      return firstName;
+   }
+
+   public String getLastName() {
+      return lastName;
    }
    
    public String getMajor() {

@@ -1,30 +1,36 @@
 public class Professor {
 
-   private int uid;
-   private String name;
+   private int instructorID;
+   private String firstName;
+   private String lastName;
    private String department;
-   private Course[] courses;
+   private int[] courses;
    
-   public Professor(int uidIn, String nameIn, String departmentIn, Course[] coursesIn) {
-      uid = uidIn;
-      name = nameIn;
+   public Professor(int instructorIDIn, String firstNameIn, String lastNameIn, String departmentIn, int[] coursesIn) {
+      instructorID = instructorIDIn;
+      firstName = firstNameIn;
+      lastName = lastNameIn;
       department = departmentIn;
       courses = coursesIn;
    }
    
-   public int getUID() {
-      return uid;
+   public int getInstructorID() {
+      return instructorID;
    }
    
-   public String getName() {
-      return name;
+   public String getFirstName() {
+      return firstName;
+   }
+
+   public String getLastName() {
+      return lastName;
    }
    
    public String getDepartment() {
       return department;
    }
    
-   public Course[] getCourses() {
+   public int[] getCourses() {
       return courses;
    }
 }

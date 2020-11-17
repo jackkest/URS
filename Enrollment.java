@@ -20,8 +20,14 @@ public class Enrollment {
    
    }
    
-   public void addCourse() {
+   // database information
+   public void addCourse(int crn) {
+      // Course.add(student)
+   }
    
+   // database information
+   public void dropCourse(int crn) {
+      // Course.drop(student)
    }
    
 }
