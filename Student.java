@@ -63,4 +63,9 @@ public class Student {
    public char[] getGrades() {
       return currentGrades;
    }
+   
+   public String toString() {
+      String s = firstName + " " + lastName + " | Banner ID: " + uid;
+      return s;
+   }
 }

@@ -13,24 +13,25 @@ public class Course {
    private Student[] classList;
    
    public Course(int crnIn, int creditHoursIn, String courseNameIn, String courseSubjectIn, int courseNumberIn,
-      String classTimeIn, int instructorIDIn, String instructMethodIn, String courseLocationIn) {
+      String classTimeIn, Professor instructorIn, int instructorIDIn, String instructMethodIn, String courseLocationIn) {
       crn = crnIn;
       creditHours = creditHoursIn;
       courseName = courseNameIn;
       courseSubject = courseSubjectIn;
       courseNumber = courseNumberIn;
       classTime = classTimeIn;
+      instructor = instructorIn;
       instructorID = instructorIDIn;
       instructMethod = instructMethodIn;
       courseLocation = courseLocationIn;
    }
    
-   // To-do
+   // To-do: Jack
    public void add(Student s) {
    
    }
    
-   // To-do
+   // To-do: Jack
    public void drop(Student s) {
    
    }
@@ -44,6 +45,15 @@ public class Course {
    }
    
    public Student[] getClassList(){
-      return null;
+      return classList;
+   }
+   
+   public String toString() {
+      
+      String s = courseSubject + " " + courseNumber + " | " + courseName + " | CRN: " + crn + " | Hours: " + creditHours
+         + "\n\t\tTime: " + classTime + " | Location: " + courseLocation
+         + " | Instructional Method: " + instructMethod + "\n\t\tInstructor: " + instructor;
+      
+      return s;
    }
 }

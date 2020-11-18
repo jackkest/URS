@@ -20,12 +20,15 @@ public class Enrollment {
    
    }
    
-   // database information
+   // database information: Jack
    public void addCourse(int crn) {
+      // Student info for user
+      // Course matching CRN needs to be added to the Student's course list
+      //Student.currentCourses[n] = course
       // Course.add(student)
    }
    
-   // database information
+   // database information: Jack
    public void dropCourse(int crn) {
       // Course.drop(student)
    }
