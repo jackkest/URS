@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.Scanner;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,6 +17,8 @@ public class RegistrationSystemDriver {
 
    private static String userName;
    private static String passWord;
+   private static Student studentUser;
+   private static Professor profUser;
    private static boolean isStudent = true; // to be set in login method
    private static boolean isProfessor = true;  // to be set in login method
 
@@ -29,89 +32,16 @@ public class RegistrationSystemDriver {
       }
       else
       {
-         System.exit(1); // an exception occured
+         System.exit(1); // an exception occurred
       }
+      clearConsole();
 
       if (isStudent) {
-         System.out.println("-------------------------------\n| Student Registration System |\n-------------------------------\n");
-         
-         // System.out.print student current schedule (current courses enrolled in)
-         // If not enrolled in any course System.out.println("No courses to display");
-         
-         System.out.println("-----------------------------\n| To add a class type ADD   |\n|                           |");
-         System.out.println("| To drop a class type DROP |\n|                           |");
-         System.out.println("| To logout type LOGOUT     |\n-----------------------------\n\n");
-         System.out.print("Please choose an option: ");
-         
-         String s = scan.next();
-         
-         while(!s.toUpperCase().equals("LOGOUT")) { 
-         
-            if (s.toUpperCase().equals("ADD")) {
-            
-               // PRINT AVAILABLE COURSES -> Database
-            
-               System.out.print("Please input the CRN for the class you want to add: ");
-               int crn = scan.nextInt();
-               // Enrollment.addCourse(crn);
-               
-               //System.out.println course info -> ADDED TO SCHEDULE
-            
-            }
-         
-            if (s.toUpperCase().equals("DROP")) {
-               System.out.print("Please input the CRN for the class you want to drop: ");
-               int crn = scan.nextInt();
-               // Enrollment.dropCourse(crn);
-            
-               //System.out.println course info -> DROPPED FROM SCHEDULE
-            }
-            
-            else {
-               System.out.println("Invalid choice. Please try again.\n");
-            }
-         
-            System.out.print("Please choose an option: ");
-            s = scan.next();
-         }
+         studentPanel(scan, conn);
       }
       
       if (isProfessor) {
-         System.out.println("Student Registration System\n\n");
-         
-         // System.out.print professor current schedule (current courses teaching)
-         // If not teaching in any courses System.out.println("No courses to display");
-         
-         System.out.println("To print a class list type CLASSLIST\n\n");
-         System.out.println("To logout type LOGOUT\n\n");
-         System.out.print("Please choose an option: ");
-         
-         String s = scan.next();
-         
-         while(!s.toUpperCase().equals("LOGOUT")) {
-         
-            if(!s.toUpperCase().equals("CLASSLIST")) {
-            
-               System.out.print("Please choose a CRN: ");
-               int crn = scan.nextInt();
-            
-            //while(crn is not valid) {
-               System.out.println("Invalid CRN. Please try again.\n");
-               System.out.print("Please choose a CRN: ");
-               crn = scan.nextInt();
-            //}
-            
-            // print class list for given CRN =-> DATABASE
-            }
-            
-            else {
-               System.out.println("Invalid choice. Please try again.\n");
-            }
-         
-            System.out.print("Please choose an option: ");
-            s = scan.next();
-         }
-            
+         professorPanel(scan, conn);
       }
    }
 
@@ -162,7 +92,7 @@ public class RegistrationSystemDriver {
             return new String(pswd);
          }
          else{
-            System.out.println("Console null, please use this application in the command line or teminal.");
+            System.out.println("Console null, please use this application in the command line or terminal.");
             System.exit(1);
          }
       }
@@ -174,6 +104,7 @@ public class RegistrationSystemDriver {
    }
 
    public static boolean loginToSystem(Connection conn) {
+      System.out.println("\n-----------------------\n| Registration System |\n-----------------------");
 
       Scanner input = new Scanner(System.in);
 
@@ -189,26 +120,30 @@ public class RegistrationSystemDriver {
             isStudent = false;
             break;
          }
-         else {
-            continue;
-         }
       }
 
+      clearConsole();
       try {
          input = new Scanner(System.in); // reconstruct the scanner for whatever reason
 
          ResultSet resultSet = null;
+         String dbQuery = null;
          while (true) {
 
-            System.out.print("\n----------------\n|    Login     |\n----------------\nUsername: ");
+            System.out.print("\n+-----------+\n|   Login   |\n+-----------+\nUsername: ");
             userName = input.nextLine();
             passWord = getPassWord();
 
-            String dbQuery = "SELECT uid, firstName, lastName, major, totalCreditHours, currentGPA, " +
-                    "userName, passHash FROM student WHERE userName = ? AND passHash = ?";
+            if(isStudent){
+               dbQuery = "SELECT uid, firstName, lastName, major, totalCreditHours, currentGPA, " +
+                       "userName, passHash FROM student WHERE userName = ? AND passHash = ?";
+            }
+            else{
+               dbQuery = "SELECT uid, firstName, lastName, department, username, passhash " +
+                       "FROM professor WHERE username = ? AND passhash = ?";
+            }
 
             PreparedStatement loginMatch = conn.prepareStatement(dbQuery);
-
             loginMatch.setString(1, userName);
             loginMatch.setString(2, getMD5(passWord));
 
@@ -225,10 +160,23 @@ public class RegistrationSystemDriver {
                continue;
             }
             else {
-               resultSet.beforeFirst();   // if the result set is not empty, roll the cursor back one row
+               resultSet.first();   // if the result set is not empty, roll the cursor back one row
             }
 
             // code to construct student object with result set
+            if(isStudent) {
+               // todo: grab matching courses from studentToCourse w/ matching uid
+               studentUser =  new Student(resultSet.getInt("uid"), resultSet.getString("firstName"),
+                       resultSet.getString("lastName"), resultSet.getString("major"),
+                       resultSet.getInt("totalCreditHours"), resultSet.getFloat("currentGPA")); // this works but doesn't do everything we need yet
+            }
+            else{
+               // todo: grab matching course ids from course table with matching instructorID/ uid
+               //profUser = new Professor(blah,blah,blah)
+            }
+            //System.out.print(studentUser.toString()); testing
+
+            clearConsole();
             System.out.println("\nWelcome, " + userName + "!\n");
             return true;
          }
@@ -239,6 +187,119 @@ public class RegistrationSystemDriver {
          System.out.println("SQLState: " + ex.getSQLState());
          System.out.println("VendorError: " + ex.getErrorCode());
          return false;
+      }
+   }
+
+   public static void clearConsole(){
+      //Clears Screen
+      try {
+         if (System.getProperty("os.name").contains("Windows")){
+            new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+         }
+         else {
+            Runtime.getRuntime().exec("clear");
+         }
+      }
+      catch (IOException | InterruptedException ex) {
+         ex.printStackTrace();
+      }
+   }
+
+   public static void professorPanel(Scanner scannerIn, Connection db){
+      Scanner scan = scannerIn;
+
+      System.out.println("+-----------------------------+\n| Student" +
+              " Registration System |\n+----------------------------" +
+              "-+\n|     Professor Panel      |\n+--------------------------+\n");
+
+      // System.out.print professor current schedule (current courses teaching)
+      // If not teaching in any courses System.out.println("No courses to display");
+
+      showOptions(isStudent);
+      String s = scan.next();
+
+      while(!s.toUpperCase().equals("LOGOUT")) {
+
+         if(s.toUpperCase().equals("CLASSLIST")) {
+
+            System.out.print("Please choose a CRN: ");
+            int crn = scan.nextInt();
+
+            //while(crn is not valid) {
+            System.out.println("Invalid CRN. Please try again.\n");
+            System.out.print("Please choose a CRN: ");
+            crn = scan.nextInt();
+            //}
+
+            // print class list for given CRN =-> DATABASE
+         }
+
+         else {
+            System.out.println("Invalid choice. Please try again.\n");
+         }
+
+         System.out.print("Please choose an option: ");
+         s = scan.next();
+      }
+   }
+
+   public static void studentPanel(Scanner scannerIn, Connection db){
+      Scanner scan = scannerIn;
+      System.out.println("+-----------------------------+\n| Student" +
+              " Registration System |\n+-----------------------------+\n");
+
+      // System.out.print student current schedule (current courses enrolled in)
+      // If not enrolled in any course System.out.println("No courses to display");
+
+      showOptions(isStudent);
+      String s = scan.next();
+
+      while(!s.toUpperCase().equals("LOGOUT")) {
+
+         if (s.toUpperCase().equals("ADD")) {
+
+            // PRINT AVAILABLE COURSES -> Database
+
+            System.out.print("Please input the CRN for the class you want to add: ");
+            int crn = scan.nextInt();
+            // Enrollment.addCourse(crn);
+            //System.out.println course info -> ADDED TO SCHEDULE
+         }
+
+         if (s.toUpperCase().equals("DROP")) {
+            // need a check here -> if student is not enrolled in any courses, make them choose again
+            System.out.print("Please input the CRN for the class you want to drop: ");
+            int crn = scan.nextInt();
+            // Enrollment.dropCourse(crn);
+            //System.out.println course info -> DROPPED FROM SCHEDULE
+         }
+
+
+         else {
+            clearConsole();
+            System.out.print("----------------------------------------\n" +
+                             "****Invalid choice. Please try again****\n" +
+                              "----------------------------------------\n");
+            showOptions(isStudent);
+         }
+         s = scan.next();
+      }
+   }
+
+   public static void showOptions(boolean isStudentIn){
+      if(isStudentIn){
+         System.out.println("+---------------------------+\n| To add a class type ADD   " +
+                 "|\n|                           |");
+         System.out.println("| To drop a class type DROP |\n|                           |");
+         System.out.println("| To logout type LOGOUT     |\n+---------------------------+\n\n");
+         System.out.print("Please choose an option: ");
+      }
+      else{
+         System.out.println("+--------------------------------------+\n" +
+                 "| To print a class list type CLASSLIST |");
+         System.out.println("| To logout type LOGOUT                |\n" +
+                 "+--------------------------------------+\n");
+         System.out.print("Please choose an option: ");
       }
    }
 }

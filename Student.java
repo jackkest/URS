@@ -8,7 +8,6 @@ public class Student {
    private Course[] allCourses;
    private int totalCreditHours;
    private float currentGPA;
-   private char[] currentGrades;
    
    public Student(int uidIn, String firstNameIn, String lastNameIn, String majorIn) {
       uid = uidIn;
@@ -18,14 +17,13 @@ public class Student {
    }
    
    public Student(int uidIn, String firstNameIn, String lastNameIn, String majorIn,
-      int totalCreditHoursIn, float currentGPAIn, char[] currentGradesIn) {
+      int totalCreditHoursIn, float currentGPAIn) {
       uid = uidIn;
       firstName = firstNameIn;
       lastName = lastNameIn;
       major = majorIn;
       totalCreditHours = totalCreditHoursIn;
       currentGPA = currentGPAIn;
-      currentGrades = currentGradesIn;
    }
    
    public int getUID() {
@@ -58,10 +56,6 @@ public class Student {
    
    public float getGPA() {
       return currentGPA;
-   }
-   
-   public char[] getGrades() {
-      return currentGrades;
    }
    
    public String toString() {
