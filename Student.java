@@ -1,11 +1,13 @@
+import java.util.ArrayList;
+
 public class Student {
  
    private int uid;
    private String firstName;
    private String lastName;
    private String major;
-   private Course[] currentCourses;
-   private Course[] allCourses;
+   private ArrayList<Course> currentCourses;
+   private ArrayList<Course> allCourses;
    private int totalCreditHours;
    private float currentGPA;
    
@@ -42,11 +44,11 @@ public class Student {
       return major;
    }
    
-   public Course[] getCurrentCourses() {
+   public ArrayList<Course> getCurrentCourses() {
       return currentCourses;
    }
 
-   public Course[] getAllCourses() {
+   public ArrayList<Course> getAllCourses() {
       return allCourses;
    }
 
@@ -56,6 +58,28 @@ public class Student {
    
    public float getGPA() {
       return currentGPA;
+   }
+   
+   public void addCousre(Course c) {
+      currentCourses.add(c);
+   }
+   
+   public void removeCousre(Course c) {
+      currentCourses.remove(c);
+   }
+   
+   public void printCurrentCourses() {
+      if (!currentCourses.isEmpty()) {
+         for (Course c : currentCourses) {
+            System.out.println(c.toString() + "\n");
+         }
+      }
+      
+      else {
+         System.out.println("\n+-------------------------------------+\n" +
+                              "|        No Courses to display        |\n" +
+                              "+-------------------------------------+\n");
+      }
    }
    
    public String toString() {

@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.math.BigInteger;
 import java.io.Console;
+import java.util.ArrayList;
 
 public class RegistrationSystemDriver {
 
@@ -26,14 +27,14 @@ public class RegistrationSystemDriver {
       
       Scanner scan = new Scanner(System.in);
       Connection conn = connToDB();
-
+   
       if(loginToSystem(conn)){
          //don't have to do anything here, just check for exception.
       }
       else {
          System.exit(1); // an exception occurred
       }
-
+   
       if (isStudent) studentPanel(scan, conn);
       else professorPanel(scan, conn);
    }
@@ -41,17 +42,17 @@ public class RegistrationSystemDriver {
    public static String getMD5(String passwordIn) {
       try{
          MessageDigest md = MessageDigest.getInstance("MD5"); // md5 hashing
-
+      
          byte[] messageDigest = md.digest(passWord.getBytes());
          BigInteger hash = new BigInteger(1, messageDigest);
          String hashtext = hash.toString(16);
-
+      
          while (hashtext.length() < 32) {
             hashtext = "0" + hashtext;
          }
          return hashtext;
       }
-
+      
       catch(NoSuchAlgorithmException e) {
          e.printStackTrace();
       }
@@ -78,7 +79,7 @@ public class RegistrationSystemDriver {
       Console console = null;
       try{
          console = System.console();
-
+      
          if(console != null)
          {
             char[] pswd = console.readPassword("Password: ");
@@ -98,13 +99,13 @@ public class RegistrationSystemDriver {
 
    public static boolean loginToSystem(Connection conn) {   // need to try to split this up for readability
       System.out.println("\n-----------------------\n| Registration System |\n-----------------------");
-
+   
       Scanner input = new Scanner(System.in);
-
+   
       while(true) {
          System.out.print("Please chose an option:\n\n(1): Student\n(2): Professor\n\nChoice: ");
          int choice = input.nextInt();
-
+      
          if (choice == 1) {
             //isProfessor = false;
             break;
@@ -114,19 +115,19 @@ public class RegistrationSystemDriver {
             break;
          }
       }
-
+   
       clearConsole();
       try {
          input = new Scanner(System.in); // reconstruct the scanner for whatever reason
-
+      
          ResultSet resultSet = null;
          String dbQuery = null;
          while (true) {
-
+         
             System.out.print("\n+-----------+\n|   Login   |\n+-----------+\nUsername: ");
             userName = input.nextLine();
             passWord = getPassWord();
-
+         
             if (isStudent) {
                dbQuery = "SELECT uid, firstName, lastName, major, totalCreditHours, currentGPA, " +
                        "userName, passHash FROM student WHERE userName = ? AND passHash = ?";
@@ -134,18 +135,18 @@ public class RegistrationSystemDriver {
                dbQuery = "SELECT uid, firstName, lastName, department, username, passhash " +
                        "FROM professor WHERE username = ? AND passhash = ?";
             }
-
+         
             PreparedStatement loginMatch = conn.prepareStatement(dbQuery);
             loginMatch.setString(1, userName);
             loginMatch.setString(2, getMD5(passWord));
-
+         
             if (loginMatch.execute()) {
                resultSet = loginMatch.getResultSet();
             } else {
                System.out.println("Error Logging in, exiting...");
                System.exit(1);   // 1 == problem
             }
-
+         
             if (!resultSet.next()) {
                System.out.println("\nIncorrect Login information, please try again.");
                continue;
@@ -155,21 +156,21 @@ public class RegistrationSystemDriver {
                break;
             }
          }
-
+      
             // code to construct student object with result set
          if(isStudent) {
             // wip: grab matching courses from studentToCourse w/ matching uid
             studentUser =  new Student(resultSet.getInt("uid"), resultSet.getString("firstName"),
                     resultSet.getString("lastName"), resultSet.getString("major"),
                     resultSet.getInt("totalCreditHours"), resultSet.getFloat("currentGPA")); // this works but doesn't do everything we need yet
-
+         
             System.out.println("\n--------------| Welcome, " + studentUser.getFirstName()
                                  + " " + studentUser.getLastName() + " |--------------\n\n");
             String query = "SELECT Course_crn FROM studentToCourse WHERE Student_uid = ?";
-
+         
             PreparedStatement courseMatch = conn.prepareStatement(query);
             courseMatch.setInt(1, studentUser.getUID());
-
+         
             if (courseMatch.execute()) {
                resultSet = courseMatch.getResultSet();
             }
@@ -177,7 +178,7 @@ public class RegistrationSystemDriver {
                System.out.println("Database error, exiting...");
                System.exit(1);   // 1 == problem
             }
-
+         
             if (!resultSet.next()) {      // the student isn't currently enrolled in any courses
                System.out.println("\n+-------------------------------------+\n" +
                                     "|        No Courses to display        |\n" +
@@ -185,25 +186,25 @@ public class RegistrationSystemDriver {
             }
             else {
                resultSet.beforeFirst();   // if the result set is not empty, roll the cursor back to before first entry
-
+            
                while(resultSet.next()) {
                   // construct a course object for every matching record
                   int courseCRN = resultSet.getInt("Course_crn");
-
+               
                   query = "SELECT crn, creditHours, courseName, courseSubject, " +
                              "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course WHERE crn = ?";
                   courseMatch = conn.prepareStatement(query);
                   courseMatch.setInt(1, courseCRN);
                   courseMatch.execute();
                   ResultSet schedule = courseMatch.getResultSet();
-
+               
                   while(schedule.next()){
                      Course c = new Course(schedule.getInt("crn"), schedule.getInt("creditHours"),
                              schedule.getString("courseName"), schedule.getString("courseSubject"),
                              schedule.getInt("courseNumber"), schedule.getString("classTime"),
                              schedule.getInt("instructorID"), schedule.getString("instructMethod"),
                              schedule.getString("courseLocation"));
-
+                  
                      //implement a showschedule method?
                      System.out.print(c.toString());
                      int x = input.nextInt();
@@ -244,37 +245,37 @@ public class RegistrationSystemDriver {
 
    public static void professorPanel(Scanner scannerIn, Connection db){
       Scanner scan = scannerIn;
-
+   
       System.out.println("+-----------------------------+\n| Student" +
               " Registration System |\n+----------------------------" +
               "-+\n|     Professor Panel      |\n+--------------------------+\n");
-
+   
       // System.out.print professor current schedule (current courses teaching)
       // If not teaching in any courses System.out.println("No courses to display");
-
+   
       showOptions(isStudent);
       String s = scan.next();
-
+   
       while(!s.toUpperCase().equals("LOGOUT")) {
-
+      
          if(s.toUpperCase().equals("CLASSLIST")) {
-
+         
             System.out.print("Please choose a CRN: ");
             int crn = scan.nextInt();
-
+         
             //while(crn is not valid) {
             System.out.println("Invalid CRN. Please try again.\n");
             System.out.print("Please choose a CRN: ");
             crn = scan.nextInt();
             //}
-
+         
             // print class list for given CRN =-> DATABASE
          }
-
+         
          else {
             System.out.println("Invalid choice. Please try again.\n");
          }
-
+      
          System.out.print("Please choose an option: ");
          s = scan.next();
       }
@@ -284,41 +285,94 @@ public class RegistrationSystemDriver {
       Scanner scan = scannerIn;
       System.out.println("+-----------------------------+\n| Student" +
               " Registration System |\n+-----------------------------+\n");
-
-      // System.out.print student current schedule (current courses enrolled in)
-      // If not enrolled in any course System.out.println("No courses to display");
-
+      
+      studentUser.printCurrentCourses(); // Not sure if this is needed here still.
+   
       showOptions(isStudent);
       String s = scan.next();
-
+   
       while(!s.toUpperCase().equals("LOGOUT")) {
-
-         if (s.toUpperCase().equals("ADD")) {
-
+         
+         try {
+            if (s.toUpperCase().equals("ADD")) {
+            
             // PRINT AVAILABLE COURSES -> Database
-
-            System.out.print("Please input the CRN for the class you want to add: ");
-            int crn = scan.nextInt();
-            // Enrollment.addCourse(crn);
-            //System.out.println course info -> ADDED TO SCHEDULE
-         }
-
-         if (s.toUpperCase().equals("DROP")) {
-            // need a check here -> if student is not enrolled in any courses, make them choose again
-            System.out.print("Please input the CRN for the class you want to drop: ");
-            int crn = scan.nextInt();
-            // Enrollment.dropCourse(crn);
-            //System.out.println course info -> DROPPED FROM SCHEDULE
-         }
-
-
-         else {
-            clearConsole();
-            System.out.print("----------------------------------------\n" +
+            
+               System.out.print("Please input the CRN for the class you want to add: ");
+               int crn = scan.nextInt();
+               ArrayList<Course> courses = studentUser.getCurrentCourses();
+               Enrollment e = new Enrollment(courses.size(), courses, studentUser);
+               
+               String query = "SELECT crn, creditHours, courseName, courseSubject, " +
+                             "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course WHERE crn = ?";
+               PreparedStatement courseMatch = db.prepareStatement(query);
+               courseMatch.setInt(1, crn);
+                  
+               if (courseMatch.execute()) { // if CRN is found then add the course
+                  ResultSet course = courseMatch.getResultSet();
+                  Course c = new Course(course.getInt("crn"), course.getInt("creditHours"),
+                             course.getString("courseName"), course.getString("courseSubject"),
+                             course.getInt("courseNumber"), course.getString("classTime"),
+                             course.getInt("instructorID"), course.getString("instructMethod"),
+                             course.getString("courseLocation"));
+                  
+                  e.addCourse(c, studentUser);
+                  
+                  System.out.println("COURSE ADDED TO SCHEDULE:");
+                  System.out.println(c.toString());
+               }
+               
+               else {
+                  System.out.println("Invalid CRN. Unable to add class to schedule.");
+               }
+            }
+         
+            if (s.toUpperCase().equals("DROP")) {
+            
+               System.out.print("Please input the CRN for the class you want to drop: ");
+               int crn = scan.nextInt();
+               ArrayList<Course> courses = studentUser.getCurrentCourses();
+               Enrollment e = new Enrollment(courses.size(), courses, studentUser);
+            
+               String query = "SELECT crn, creditHours, courseName, courseSubject, " +
+                             "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course WHERE crn = ?";
+               PreparedStatement courseMatch = db.prepareStatement(query);
+               courseMatch.setInt(1, crn);
+                  
+               if (courseMatch.execute()) { // if CRN is found then remove the course
+                  ResultSet course = courseMatch.getResultSet();
+                  Course c = new Course(course.getInt("crn"), course.getInt("creditHours"),
+                             course.getString("courseName"), course.getString("courseSubject"),
+                             course.getInt("courseNumber"), course.getString("classTime"),
+                             course.getInt("instructorID"), course.getString("instructMethod"),
+                             course.getString("courseLocation"));
+                  
+                  e.dropCourse(c, studentUser);
+                  
+                  System.out.println("COURSE REMOVED FROM SCHEDULE:");
+                  System.out.println(c.toString());
+               }
+               
+               else {
+                  System.out.println("Invalid CRN. Unable to drop class from schedule.");
+               }
+            }
+            
+            else {
+               clearConsole();
+               System.out.print("----------------------------------------\n" +
                              "****Invalid choice. Please try again****\n" +
                               "----------------------------------------\n");
-            showOptions(isStudent);
+            }
          }
+         catch(SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage());
+            System.out.println("SQLState: " + ex.getSQLState());
+            System.out.println("VendorError: " + ex.getErrorCode());
+            break;
+         }
+         
+         showOptions(isStudent);
          s = scan.next();
       }
    }

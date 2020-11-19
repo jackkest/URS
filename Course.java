@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Course {
    
    private int crn;
@@ -10,7 +12,7 @@ public class Course {
    private int instructorID;
    private String instructMethod;
    private String courseLocation;
-   private Student[] classList;
+   private ArrayList<Student> classList;
    
    public Course(int crnIn, int creditHoursIn, String courseNameIn, String courseSubjectIn, int courseNumberIn,
       String classTimeIn, int instructorIDIn, String instructMethodIn, String courseLocationIn) {
@@ -25,14 +27,12 @@ public class Course {
       courseLocation = courseLocationIn;
    }
    
-   // To-do: Jack
    public void add(Student s) {
-   
+      classList.add(s);
    }
    
-   // To-do: Jack
    public void drop(Student s) {
-   
+      classList.remove(s);
    }
    
    public void setInstructor(Professor p) {
@@ -43,7 +43,7 @@ public class Course {
       return instructor;
    }
    
-   public Student[] getClassList(){
+   public ArrayList<Student> getClassList(){
       return classList;
    }
    

@@ -1,12 +1,14 @@
+import java.util.ArrayList;
+
 public class Professor {
 
    private int instructorID;
    private String firstName;
    private String lastName;
    private String department;
-   private int[] courses;
+   private ArrayList<Course> courses;
    
-   public Professor(int instructorIDIn, String firstNameIn, String lastNameIn, String departmentIn, int[] coursesIn) {
+   public Professor(int instructorIDIn, String firstNameIn, String lastNameIn, String departmentIn, ArrayList<Course> coursesIn) {
       instructorID = instructorIDIn;
       firstName = firstNameIn;
       lastName = lastNameIn;
@@ -30,7 +32,7 @@ public class Professor {
       return department;
    }
    
-   public int[] getCourses() {
+   public ArrayList<Course> getCourses() {
       return courses;
    }
 }

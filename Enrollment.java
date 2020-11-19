@@ -1,36 +1,42 @@
+import java.util.ArrayList;
+
 public class Enrollment {
    
    private int numberOfCourses;
-   private Course[] courses;
+   private ArrayList<Course> courses;
    private Student student;
    
    // to-do: implement checkEligibility()
    
-   public Enrollment(int numberOfCoursesIn, Course[] coursesIn, Student studentIn) {
+   public Enrollment(int numberOfCoursesIn, ArrayList<Course> coursesIn, Student studentIn) {
       numberOfCourses = numberOfCoursesIn;
       courses = coursesIn;
       student = studentIn;
    }
    
+   public ArrayList<Course> getCourses() {
+      return courses;
+   }
+   
+   public void addCourse(Course c, Student s) {
+      numberOfCourses++;
+      courses.add(c);
+      
+      c.add(s); // Add student to the course
+      s.addCousre(c); // Add course to student's list of current courses
+   }
+   
+   public void dropCourse(Course c, Student s){
+      numberOfCourses--;
+      courses.remove(c);
+      
+      c.drop(s); // Remove student from the course
+      s.removeCousre(c); // Remove course from student's list of current courses
+   }
+   
    public void printCourses() {
-   
+      for (Course c : courses) {
+         System.out.println(c.toString() + "\n");
+      }
    }
-   
-   public void getCourse() {
-   
-   }
-   
-   // database information: Jack
-   public void addCourse(int crn) {
-      // Student info for user
-      // Course matching CRN needs to be added to the Student's course list
-      //Student.currentCourses[n] = course
-      // Course.add(student)
-   }
-   
-   // database information: Jack
-   public void dropCourse(int crn) {
-      // Course.drop(student)
-   }
-   
 }
