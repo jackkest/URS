@@ -35,4 +35,27 @@ public class Professor {
    public ArrayList<Course> getCourses() {
       return courses;
    }
+   
+   public void printCourses() {
+      if (!courses.isEmpty()) {
+         for (Course c : courses) {
+            System.out.println(c.toString() + "\n");
+         }
+      }
+      
+      else {
+         System.out.println("\n+-------------------------------------+\n" +
+                              "|        No Courses to display        |\n" +
+                              "+-------------------------------------+\n");
+      }
+   }
+   
+   public void printClassList(Course c) {
+      System.out.println(c.getCourseHeader() + "\n");
+      
+      ArrayList<Student> classList = c.getClassList();
+      for (Student s : classList) {
+         System.out.println(s.toString());
+      }
+   }
 }

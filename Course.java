@@ -47,9 +47,14 @@ public class Course {
       return classList;
    }
    
+   public String getCourseHeader() {
+      String s = courseSubject + " " + courseNumber + " | " + courseName;
+      return s;
+   }
+   
    public String toString() {
       
-      String s = "| " + courseSubject + " " + courseNumber + " | " + courseName + " | CRN: " + crn + " | Hours: " + creditHours
+      String s = courseSubject + " " + courseNumber + " | " + courseName + " | CRN: " + crn + " | Hours: " + creditHours
          + "| Time: " + classTime + " | Location: " + courseLocation
          + " | Instructional Method: " + instructMethod + "| Instructor: " + instructor;
       

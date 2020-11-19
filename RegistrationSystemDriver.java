@@ -249,34 +249,57 @@ public class RegistrationSystemDriver {
       System.out.println("+-----------------------------+\n| Student" +
               " Registration System |\n+----------------------------" +
               "-+\n|     Professor Panel      |\n+--------------------------+\n");
+      
+      profUser.printCourses(); // Not sure if this is needed here still.
    
-      // System.out.print professor current schedule (current courses teaching)
-      // If not teaching in any courses System.out.println("No courses to display");
-   
-      showOptions(isStudent);
+      showOptions(isProfessor);
       String s = scan.next();
    
       while(!s.toUpperCase().equals("LOGOUT")) {
-      
-         if(s.toUpperCase().equals("CLASSLIST")) {
-         
-            System.out.print("Please choose a CRN: ");
-            int crn = scan.nextInt();
-         
-            //while(crn is not valid) {
-            System.out.println("Invalid CRN. Please try again.\n");
-            System.out.print("Please choose a CRN: ");
-            crn = scan.nextInt();
-            //}
-         
-            // print class list for given CRN =-> DATABASE
+         try {
+            if(s.toUpperCase().equals("CLASSLIST")) {
+            
+               System.out.print("Please choose a CRN: ");
+               int crn = scan.nextInt();
+            
+               ArrayList<Course> courses = profUser.getCourses();
+               
+               String query = "SELECT crn, creditHours, courseName, courseSubject, " +
+                             "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course WHERE crn = ?";
+               PreparedStatement courseMatch = db.prepareStatement(query);
+               courseMatch.setInt(1, crn);
+                  
+               if (courseMatch.execute()) { // if CRN is found then print the classList for the course
+                  ResultSet course = courseMatch.getResultSet();
+                  Course c = new Course(course.getInt("crn"), course.getInt("creditHours"),
+                             course.getString("courseName"), course.getString("courseSubject"),
+                             course.getInt("courseNumber"), course.getString("classTime"),
+                             course.getInt("instructorID"), course.getString("instructMethod"),
+                             course.getString("courseLocation"));
+                  
+                  profUser.printClassList(c);
+               }
+               
+               else {
+                  System.out.println("Invalid CRN. Unable to print class list.");
+               }
+            }
+            
+            else {
+               clearConsole();
+               System.out.print("----------------------------------------\n" +
+                             "****Invalid choice. Please try again****\n" +
+                              "----------------------------------------\n");
+            }
+         }
+         catch(SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage());
+            System.out.println("SQLState: " + ex.getSQLState());
+            System.out.println("VendorError: " + ex.getErrorCode());
+            break;
          }
          
-         else {
-            System.out.println("Invalid choice. Please try again.\n");
-         }
-      
-         System.out.print("Please choose an option: ");
+         showOptions(isProfessor);
          s = scan.next();
       }
    }
