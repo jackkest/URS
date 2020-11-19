@@ -6,21 +6,20 @@ public class Course {
    private String courseSubject;
    private int courseNumber;
    private String classTime;
-   private Professor instructor;
+   private Professor instructor; // todo: set this in it's own method
    private int instructorID;
    private String instructMethod;
    private String courseLocation;
    private Student[] classList;
    
    public Course(int crnIn, int creditHoursIn, String courseNameIn, String courseSubjectIn, int courseNumberIn,
-      String classTimeIn, Professor instructorIn, int instructorIDIn, String instructMethodIn, String courseLocationIn) {
+      String classTimeIn, int instructorIDIn, String instructMethodIn, String courseLocationIn) {
       crn = crnIn;
       creditHours = creditHoursIn;
       courseName = courseNameIn;
       courseSubject = courseSubjectIn;
       courseNumber = courseNumberIn;
       classTime = classTimeIn;
-      instructor = instructorIn;
       instructorID = instructorIDIn;
       instructMethod = instructMethodIn;
       courseLocation = courseLocationIn;
@@ -50,9 +49,9 @@ public class Course {
    
    public String toString() {
       
-      String s = courseSubject + " " + courseNumber + " | " + courseName + " | CRN: " + crn + " | Hours: " + creditHours
-         + "\n\t\tTime: " + classTime + " | Location: " + courseLocation
-         + " | Instructional Method: " + instructMethod + "\n\t\tInstructor: " + instructor;
+      String s = "| " + courseSubject + " " + courseNumber + " | " + courseName + " | CRN: " + crn + " | Hours: " + creditHours
+         + "| Time: " + classTime + " | Location: " + courseLocation
+         + " | Instructional Method: " + instructMethod + "| Instructor: " + instructor;
       
       return s;
    }

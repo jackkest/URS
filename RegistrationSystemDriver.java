@@ -25,24 +25,17 @@ public class RegistrationSystemDriver {
    public static void main(String[] args) {
       
       Scanner scan = new Scanner(System.in);
-
       Connection conn = connToDB();
+
       if(loginToSystem(conn)){
          //don't have to do anything here, just check for exception.
       }
-      else
-      {
+      else {
          System.exit(1); // an exception occurred
       }
-      clearConsole();
 
-      if (isStudent) {
-         studentPanel(scan, conn);
-      }
-      
-      if (isProfessor) {
-         professorPanel(scan, conn);
-      }
+      if (isStudent) studentPanel(scan, conn);
+      else professorPanel(scan, conn);
    }
 
    public static String getMD5(String passwordIn) {
@@ -103,7 +96,7 @@ public class RegistrationSystemDriver {
       return null;
    }
 
-   public static boolean loginToSystem(Connection conn) {
+   public static boolean loginToSystem(Connection conn) {   // need to try to split this up for readability
       System.out.println("\n-----------------------\n| Registration System |\n-----------------------");
 
       Scanner input = new Scanner(System.in);
@@ -113,7 +106,7 @@ public class RegistrationSystemDriver {
          int choice = input.nextInt();
 
          if (choice == 1) {
-            isProfessor = false;
+            //isProfessor = false;
             break;
          }
          else if (choice == 2) {
@@ -134,11 +127,10 @@ public class RegistrationSystemDriver {
             userName = input.nextLine();
             passWord = getPassWord();
 
-            if(isStudent){
+            if (isStudent) {
                dbQuery = "SELECT uid, firstName, lastName, major, totalCreditHours, currentGPA, " +
                        "userName, passHash FROM student WHERE userName = ? AND passHash = ?";
-            }
-            else{
+            } else {
                dbQuery = "SELECT uid, firstName, lastName, department, username, passhash " +
                        "FROM professor WHERE username = ? AND passhash = ?";
             }
@@ -149,8 +141,7 @@ public class RegistrationSystemDriver {
 
             if (loginMatch.execute()) {
                resultSet = loginMatch.getResultSet();
-            }
-            else {
+            } else {
                System.out.println("Error Logging in, exiting...");
                System.exit(1);   // 1 == problem
             }
@@ -158,28 +149,74 @@ public class RegistrationSystemDriver {
             if (!resultSet.next()) {
                System.out.println("\nIncorrect Login information, please try again.");
                continue;
-            }
-            else {
+            } else {
                resultSet.first();   // if the result set is not empty, roll the cursor back one row
+               clearConsole();
+               break;
             }
+         }
 
             // code to construct student object with result set
-            if(isStudent) {
-               // todo: grab matching courses from studentToCourse w/ matching uid
-               studentUser =  new Student(resultSet.getInt("uid"), resultSet.getString("firstName"),
-                       resultSet.getString("lastName"), resultSet.getString("major"),
-                       resultSet.getInt("totalCreditHours"), resultSet.getFloat("currentGPA")); // this works but doesn't do everything we need yet
-            }
-            else{
-               // todo: grab matching course ids from course table with matching instructorID/ uid
-               //profUser = new Professor(blah,blah,blah)
-            }
-            //System.out.print(studentUser.toString()); testing
+         if(isStudent) {
+            // wip: grab matching courses from studentToCourse w/ matching uid
+            studentUser =  new Student(resultSet.getInt("uid"), resultSet.getString("firstName"),
+                    resultSet.getString("lastName"), resultSet.getString("major"),
+                    resultSet.getInt("totalCreditHours"), resultSet.getFloat("currentGPA")); // this works but doesn't do everything we need yet
 
-            clearConsole();
-            System.out.println("\nWelcome, " + userName + "!\n");
-            return true;
+            System.out.println("\n--------------| Welcome, " + studentUser.getFirstName()
+                                 + " " + studentUser.getLastName() + " |--------------\n\n");
+            String query = "SELECT Course_crn FROM studentToCourse WHERE Student_uid = ?";
+
+            PreparedStatement courseMatch = conn.prepareStatement(query);
+            courseMatch.setInt(1, studentUser.getUID());
+
+            if (courseMatch.execute()) {
+               resultSet = courseMatch.getResultSet();
+            }
+            else {
+               System.out.println("Database error, exiting...");
+               System.exit(1);   // 1 == problem
+            }
+
+            if (!resultSet.next()) {      // the student isn't currently enrolled in any courses
+               System.out.println("\n+-------------------------------------+\n" +
+                                    "|        No Courses to display        |\n" +
+                                    "+-------------------------------------+\n");
+            }
+            else {
+               resultSet.beforeFirst();   // if the result set is not empty, roll the cursor back to before first entry
+
+               while(resultSet.next()) {
+                  // construct a course object for every matching record
+                  int courseCRN = resultSet.getInt("Course_crn");
+
+                  query = "SELECT crn, creditHours, courseName, courseSubject, " +
+                             "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course WHERE crn = ?";
+                  courseMatch = conn.prepareStatement(query);
+                  courseMatch.setInt(1, courseCRN);
+                  courseMatch.execute();
+                  ResultSet schedule = courseMatch.getResultSet();
+
+                  while(schedule.next()){
+                     Course c = new Course(schedule.getInt("crn"), schedule.getInt("creditHours"),
+                             schedule.getString("courseName"), schedule.getString("courseSubject"),
+                             schedule.getInt("courseNumber"), schedule.getString("classTime"),
+                             schedule.getInt("instructorID"), schedule.getString("instructMethod"),
+                             schedule.getString("courseLocation"));
+
+                     //implement a showschedule method?
+                     System.out.print(c.toString());
+                     int x = input.nextInt();
+                  }
+               }
+            }
          }
+         else{
+            // todo: grab matching course ids from course table with matching instructorID/ uid
+            //profUser = new Professor(blah,blah,blah)
+         }
+         //System.out.print(studentUser.toString()); testing
+         return true;
       }
       catch(SQLException ex)
       {
