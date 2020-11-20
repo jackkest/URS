@@ -161,7 +161,7 @@ public class RegistrationSystemDriver {
                     resultSet.getString("lastName"), resultSet.getString("major"),
                     resultSet.getInt("totalCreditHours"), resultSet.getFloat("currentGPA"));
             resultSet.close();
-
+         
             System.out.println("+-----------------------------+\n" +
                                "| Student Registration System |\n" +
                                "+-----------------------------+\n");
@@ -174,7 +174,7 @@ public class RegistrationSystemDriver {
          
             if (courseMatch.execute()) {
                resultSet = courseMatch.getResultSet();
-
+            
             }
             else {
                System.out.println("Database error, exiting...");
@@ -219,17 +219,17 @@ public class RegistrationSystemDriver {
             String query = "SELECT crn, creditHours, courseName, courseSubject, " +
                     "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course WHERE instructorID = ?";
             PreparedStatement ps = conn.prepareStatement(query);
-            ps.setInt(1,profUser.getInstructorID());
+            ps.setInt(1, profUser.getInstructorID());
             ps.execute();
             ResultSet schedule = ps.getResultSet();
-
+         
             while(schedule.next()){
                Course c = new Course(schedule.getInt("crn"), schedule.getInt("creditHours"),
                        schedule.getString("courseName"), schedule.getString("courseSubject"),
                        schedule.getInt("courseNumber"), schedule.getString("classTime"),
                        schedule.getInt("instructorID"), schedule.getString("instructMethod"),
                        schedule.getString("courseLocation"));
-
+            
                profUser.addCourse(c);
             }
          }
@@ -267,7 +267,7 @@ public class RegistrationSystemDriver {
               "-+\n|     Professor Panel      |\n+--------------------------+\n");
       System.out.println("Welcome, " + profUser.getFirstName()
               + " " + profUser.getLastName() + "\n\n");
-
+   
       for(Course c: profUser.getCourses())
       {
          c.setInstructor(profUser);    // professors can only see classes they teach, therefore we can assume they are the teacher
@@ -338,15 +338,34 @@ public class RegistrationSystemDriver {
          try {
             if (s.toUpperCase().equals("ADD")) {
             
-            // PRINT AVAILABLE COURSES -> Database
+            // PRINT AVAILABLE COURSES
+               String query = "SELECT crn, creditHours, courseName, courseSubject, " +
+                    "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course";
+               Statement stmt = db.createStatement();
+               ResultSet coursesAvailable = stmt.executeQuery(query);
             
+               while(coursesAvailable.next()){
+                  Course c = new Course(coursesAvailable.getInt("crn"), coursesAvailable.getInt("creditHours"),
+                       coursesAvailable.getString("courseName"), coursesAvailable.getString("courseSubject"),
+                       coursesAvailable.getInt("courseNumber"), coursesAvailable.getString("classTime"),
+                       coursesAvailable.getInt("instructorID"), coursesAvailable.getString("instructMethod"),
+                       coursesAvailable.getString("courseLocation"));
+                  
+                  // If student is not enrolled, It is a course that they can add
+                  if (!studentUser.checkEnrollment(c)) {
+                     System.out.println(c.toString());
+                  }
+               }
+               
+               System.out.println("\n\n");
+               
                System.out.print("Please input the CRN for the class you want to add: ");
                int crn = scan.nextInt();
                ArrayList<Course> courses = studentUser.getCurrentCourses();
                Enrollment e = new Enrollment(courses.size(), courses, studentUser);
-
+            
                //todo: fix sqlexception
-               String query = "SELECT crn, creditHours, courseName, courseSubject, " +
+               query = "SELECT crn, creditHours, courseName, courseSubject, " +
                              "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course WHERE crn = ?";
                PreparedStatement courseMatch = db.prepareStatement(query);
                courseMatch.setInt(1, crn);
@@ -359,10 +378,15 @@ public class RegistrationSystemDriver {
                              course.getInt("instructorID"), course.getString("instructMethod"),
                              course.getString("courseLocation"));
                   
-                  e.addCourse(c, studentUser);
+                  boolean isAdded = e.addCourse(c, studentUser);
+                  if (isAdded) {
+                     System.out.println("COURSE ADDED TO SCHEDULE:");
+                     System.out.println(c.toString());
+                  }
                   
-                  System.out.println("COURSE ADDED TO SCHEDULE:");
-                  System.out.println(c.toString());
+                  else {
+                     System.out.println("Class already added.");
+                  }
                }
                
                else {
@@ -444,16 +468,16 @@ public class RegistrationSystemDriver {
       String query = null;
       PreparedStatement ps = null;
       ResultSet rs = null;
-
+   
       for(Course c : st.getCurrentCourses()){
          query = "SELECT uid, firstName, lastName, department " +
                  "FROM professor WHERE uid = ?";
-
+      
          ps = db.prepareStatement(query);
          ps.setInt(1, c.getInstructorID());
          ps.execute();
          rs = ps.getResultSet();
-
+      
          if(rs.next()){
             Professor instructor = new Professor(rs.getInt("uid"), rs.getString("firstName"),
                     rs.getString("lastName"), rs.getString("department"));

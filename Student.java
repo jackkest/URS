@@ -61,8 +61,25 @@ public class Student {
       return currentGPA;
    }
    
-   public void addCourse(Course c) {
-      currentCourses.add(c);
+   public boolean checkEnrollment(Course c) {
+      if (currentCourses.contains(c)) {
+         currentCourses.add(c);
+         return true; // Student is enrolled in course
+      }
+      
+      else {
+         return false; // Student is not enrolled in course
+      }
+   }
+   
+   public boolean addCourse(Course c) {
+      if (!currentCourses.contains(c)) {
+         currentCourses.add(c);
+         return true;
+      }
+      else {
+         return false;
+      }
    }
    
    public void removeCourse(Course c) {

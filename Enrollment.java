@@ -18,12 +18,20 @@ public class Enrollment {
       return courses;
    }
    
-   public void addCourse(Course c, Student s) {
+   public boolean addCourse(Course c, Student s) {
       numberOfCourses++;
       courses.add(c);
       
       c.add(s); // Add student to the course
-      s.addCourse(c); // Add course to student's list of current courses
+      boolean isAdded = s.addCourse(c); // Add course to student's list of current courses
+      
+      if (isAdded) {
+         return true;
+      }
+      
+      else {
+         return false;
+      }
    }
    
    public void dropCourse(Course c, Student s){
