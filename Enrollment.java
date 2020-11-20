@@ -23,7 +23,7 @@ public class Enrollment {
       courses.add(c);
       
       c.add(s); // Add student to the course
-      s.addCousre(c); // Add course to student's list of current courses
+      s.addCourse(c); // Add course to student's list of current courses
    }
    
    public void dropCourse(Course c, Student s){
@@ -31,7 +31,7 @@ public class Enrollment {
       courses.remove(c);
       
       c.drop(s); // Remove student from the course
-      s.removeCousre(c); // Remove course from student's list of current courses
+      s.removeCourse(c); // Remove course from student's list of current courses
    }
    
    public void printCourses() {

@@ -26,6 +26,7 @@ public class Student {
       major = majorIn;
       totalCreditHours = totalCreditHoursIn;
       currentGPA = currentGPAIn;
+      currentCourses = new ArrayList<Course>();
    }
    
    public int getUID() {
@@ -60,21 +61,23 @@ public class Student {
       return currentGPA;
    }
    
-   public void addCousre(Course c) {
+   public void addCourse(Course c) {
       currentCourses.add(c);
    }
    
-   public void removeCousre(Course c) {
+   public void removeCourse(Course c) {
       currentCourses.remove(c);
    }
    
    public void printCurrentCourses() {
+      String tableOutput =  "+------------------------------------------------" +
+              "------------------------------------------------------+";
       if (!currentCourses.isEmpty()) {
+         System.out.println(tableOutput);
          for (Course c : currentCourses) {
-            System.out.println(c.toString() + "\n");
+            System.out.println(c.toString() + "\n" + tableOutput);
          }
       }
-      
       else {
          System.out.println("\n+-------------------------------------+\n" +
                               "|        No Courses to display        |\n" +

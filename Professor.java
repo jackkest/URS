@@ -8,12 +8,12 @@ public class Professor {
    private String department;
    private ArrayList<Course> courses;
    
-   public Professor(int instructorIDIn, String firstNameIn, String lastNameIn, String departmentIn, ArrayList<Course> coursesIn) {
+   public Professor(int instructorIDIn, String firstNameIn, String lastNameIn, String departmentIn) {
       instructorID = instructorIDIn;
       firstName = firstNameIn;
       lastName = lastNameIn;
       department = departmentIn;
-      courses = coursesIn;
+      courses = new ArrayList<Course>();
    }
    
    public int getInstructorID() {
@@ -44,9 +44,9 @@ public class Professor {
       }
       
       else {
-         System.out.println("\n+-------------------------------------+\n" +
-                              "|        No Courses to display        |\n" +
-                              "+-------------------------------------+\n");
+         System.out.println("+-------------------------------------+\n" +
+                            "|        No Courses to display        |\n" +
+                            "+-------------------------------------+\n");
       }
    }
    
@@ -57,5 +57,9 @@ public class Professor {
       for (Student s : classList) {
          System.out.println(s.toString());
       }
+   }
+
+   public void addCourse(Course c){
+      courses.add(c);
    }
 }

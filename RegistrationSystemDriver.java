@@ -20,8 +20,7 @@ public class RegistrationSystemDriver {
    private static String passWord;
    private static Student studentUser;
    private static Professor profUser;
-   private static boolean isStudent = true; // to be set in login method
-   private static boolean isProfessor = true;  // to be set in login method
+   private static boolean isStudent = true; // if it is a student, then it is not a professor
 
    public static void main(String[] args) {
       
@@ -107,7 +106,6 @@ public class RegistrationSystemDriver {
          int choice = input.nextInt();
       
          if (choice == 1) {
-            //isProfessor = false;
             break;
          }
          else if (choice == 2) {
@@ -159,13 +157,16 @@ public class RegistrationSystemDriver {
       
             // code to construct student object with result set
          if(isStudent) {
-            // wip: grab matching courses from studentToCourse w/ matching uid
             studentUser =  new Student(resultSet.getInt("uid"), resultSet.getString("firstName"),
                     resultSet.getString("lastName"), resultSet.getString("major"),
-                    resultSet.getInt("totalCreditHours"), resultSet.getFloat("currentGPA")); // this works but doesn't do everything we need yet
-         
-            System.out.println("\n--------------| Welcome, " + studentUser.getFirstName()
-                                 + " " + studentUser.getLastName() + " |--------------\n\n");
+                    resultSet.getInt("totalCreditHours"), resultSet.getFloat("currentGPA"));
+            resultSet.close();
+
+            System.out.println("+-----------------------------+\n" +
+                               "| Student Registration System |\n" +
+                               "+-----------------------------+\n");
+            System.out.println("Welcome, " + studentUser.getFirstName()
+                                 + " " + studentUser.getLastName() + "\n\n");
             String query = "SELECT Course_crn FROM studentToCourse WHERE Student_uid = ?";
          
             PreparedStatement courseMatch = conn.prepareStatement(query);
@@ -173,6 +174,7 @@ public class RegistrationSystemDriver {
          
             if (courseMatch.execute()) {
                resultSet = courseMatch.getResultSet();
+
             }
             else {
                System.out.println("Database error, exiting...");
@@ -205,18 +207,32 @@ public class RegistrationSystemDriver {
                              schedule.getInt("instructorID"), schedule.getString("instructMethod"),
                              schedule.getString("courseLocation"));
                   
-                     //implement a showschedule method?
-                     System.out.print(c.toString());
-                     int x = input.nextInt();
+                     studentUser.addCourse(c);
                   }
+                  schedule.close();
                }
+               generateCourseInstructor(conn, studentUser);
             }
          }
          else{
-            // todo: grab matching course ids from course table with matching instructorID/ uid
-            //profUser = new Professor(blah,blah,blah)
+            profUser = new Professor(resultSet.getInt("uid"), resultSet.getString("firstName"), resultSet.getString("lastName"), resultSet.getString("department"));
+            String query = "SELECT crn, creditHours, courseName, courseSubject, " +
+                    "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course WHERE instructorID = ?";
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setInt(1,profUser.getInstructorID());
+            ps.execute();
+            ResultSet schedule = ps.getResultSet();
+
+            while(schedule.next()){
+               Course c = new Course(schedule.getInt("crn"), schedule.getInt("creditHours"),
+                       schedule.getString("courseName"), schedule.getString("courseSubject"),
+                       schedule.getInt("courseNumber"), schedule.getString("classTime"),
+                       schedule.getInt("instructorID"), schedule.getString("instructMethod"),
+                       schedule.getString("courseLocation"));
+
+               profUser.addCourse(c);
+            }
          }
-         //System.out.print(studentUser.toString()); testing
          return true;
       }
       catch(SQLException ex)
@@ -249,10 +265,17 @@ public class RegistrationSystemDriver {
       System.out.println("+-----------------------------+\n| Student" +
               " Registration System |\n+----------------------------" +
               "-+\n|     Professor Panel      |\n+--------------------------+\n");
+      System.out.println("Welcome, " + profUser.getFirstName()
+              + " " + profUser.getLastName() + "\n\n");
+
+      for(Course c: profUser.getCourses())
+      {
+         c.setInstructor(profUser);    // professors can only see classes they teach, therefore we can assume they are the teacher
+      }
       
       profUser.printCourses(); // Not sure if this is needed here still.
    
-      showOptions(isProfessor);
+      showOptions(isStudent);
       String s = scan.next();
    
       while(!s.toUpperCase().equals("LOGOUT")) {
@@ -279,7 +302,6 @@ public class RegistrationSystemDriver {
                   
                   profUser.printClassList(c);
                }
-               
                else {
                   System.out.println("Invalid CRN. Unable to print class list.");
                }
@@ -299,16 +321,13 @@ public class RegistrationSystemDriver {
             break;
          }
          
-         showOptions(isProfessor);
+         showOptions(isStudent);
          s = scan.next();
       }
    }
 
    public static void studentPanel(Scanner scannerIn, Connection db){
       Scanner scan = scannerIn;
-      System.out.println("+-----------------------------+\n| Student" +
-              " Registration System |\n+-----------------------------+\n");
-      
       studentUser.printCurrentCourses(); // Not sure if this is needed here still.
    
       showOptions(isStudent);
@@ -325,7 +344,8 @@ public class RegistrationSystemDriver {
                int crn = scan.nextInt();
                ArrayList<Course> courses = studentUser.getCurrentCourses();
                Enrollment e = new Enrollment(courses.size(), courses, studentUser);
-               
+
+               //todo: fix sqlexception
                String query = "SELECT crn, creditHours, courseName, courseSubject, " +
                              "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course WHERE crn = ?";
                PreparedStatement courseMatch = db.prepareStatement(query);
@@ -402,18 +422,43 @@ public class RegistrationSystemDriver {
 
    public static void showOptions(boolean isStudentIn){
       if(isStudentIn){
-         System.out.println("+---------------------------+\n| To add a class type ADD   " +
-                 "|\n|                           |");
-         System.out.println("| To drop a class type DROP |\n|                           |");
-         System.out.println("| To logout type LOGOUT     |\n+---------------------------+\n\n");
+         System.out.println("+---------------------------+\n" +
+                            "|  To add a class type ADD  |\n" +
+                            "|                           |");
+         System.out.println("| To drop a class type DROP |\n" +
+                            "|                           |");
+         System.out.println("| To logout type LOGOUT     |\n" +
+                            "+---------------------------+\n\n");
          System.out.print("Please choose an option: ");
       }
       else{
          System.out.println("+--------------------------------------+\n" +
-                 "| To print a class list type CLASSLIST |");
+                            "| To print a class list type CLASSLIST |");
          System.out.println("| To logout type LOGOUT                |\n" +
-                 "+--------------------------------------+\n");
+                            "+--------------------------------------+\n");
          System.out.print("Please choose an option: ");
+      }
+   }
+
+   public static void generateCourseInstructor(Connection db, Student st) throws SQLException {
+      String query = null;
+      PreparedStatement ps = null;
+      ResultSet rs = null;
+
+      for(Course c : st.getCurrentCourses()){
+         query = "SELECT uid, firstName, lastName, department " +
+                 "FROM professor WHERE uid = ?";
+
+         ps = db.prepareStatement(query);
+         ps.setInt(1, c.getInstructorID());
+         ps.execute();
+         rs = ps.getResultSet();
+
+         if(rs.next()){
+            Professor instructor = new Professor(rs.getInt("uid"), rs.getString("firstName"),
+                    rs.getString("lastName"), rs.getString("department"));
+            c.setInstructor(instructor);
+         }
       }
    }
 }

@@ -38,6 +38,10 @@ public class Course {
    public void setInstructor(Professor p) {
       instructor = p;
    }
+
+   public int getInstructorID(){
+      return instructorID;
+   }
    
    public Professor getInstructor() {
       return instructor;
@@ -53,11 +57,19 @@ public class Course {
    }
    
    public String toString() {
-      
-      String s = courseSubject + " " + courseNumber + " | " + courseName + " | CRN: " + crn + " | Hours: " + creditHours
-         + "| Time: " + classTime + " | Location: " + courseLocation
-         + " | Instructional Method: " + instructMethod + "| Instructor: " + instructor;
-      
-      return s;
+
+      StringBuilder sb = new StringBuilder();
+      //todo: format classtime by delineating w/ comma
+
+      // pretty table output
+      sb.append(String.format("| %-5s", courseSubject));
+      sb.append(String.format("| %-5s", courseNumber));
+      sb.append(String.format("| %-40s", courseName));
+      sb.append(String.format("| %-6s", crn));
+      sb.append(String.format("| %-2s", creditHours));
+      sb.append(String.format("| %-20s", classTime));
+      sb.append(String.format("| %-10s", courseLocation) + " |");
+
+      return sb.toString();
    }
 }
