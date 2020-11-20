@@ -35,12 +35,26 @@ public class Professor {
    public ArrayList<Course> getCourses() {
       return courses;
    }
+
+   public Course getCourseFromCRN(int crnIn){
+      for(Course c : getCourses()){
+         if(c.getCRN() == crnIn){
+            return c;
+         }
+      }
+      return null;   // this should never happen
+   }
    
    public void printCourses() {
+      String tableOutput =  "+------+------+--------------------------------" +
+              "---------+-------+---+---------------------+------------+";
+
       if (!courses.isEmpty()) {
+         System.out.println(tableOutput);
          for (Course c : courses) {
-            System.out.println(c.toString() + "\n");
+            System.out.println(c.toString());
          }
+         System.out.println(tableOutput);
       }
       
       else {
@@ -51,9 +65,15 @@ public class Professor {
    }
    
    public void printClassList(Course c) {
-      System.out.println(c.getCourseHeader() + "\n");
+      System.out.println("\n" + c.getCourseHeader() + "\n");
       
       ArrayList<Student> classList = c.getClassList();
+
+      if(classList.isEmpty())
+         System.out.println("+----------------------+\n" +
+                            "| No Students Enrolled |\n" +
+                            "+----------------------+");
+
       for (Student s : classList) {
          System.out.println(s.toString());
       }

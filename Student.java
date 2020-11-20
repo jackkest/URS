@@ -62,14 +62,9 @@ public class Student {
    }
    
    public boolean checkEnrollment(Course c) {
-      if (currentCourses.contains(c)) {
-         currentCourses.add(c);
-         return true; // Student is enrolled in course
-      }
-      
-      else {
-         return false; // Student is not enrolled in course
-      }
+      boolean test = currentCourses.contains(c); //testing
+      System.out.println(test);
+      return test;
    }
    
    public boolean addCourse(Course c) {
@@ -77,9 +72,7 @@ public class Student {
          currentCourses.add(c);
          return true;
       }
-      else {
-         return false;
-      }
+      return false;
    }
    
    public void removeCourse(Course c) {
@@ -87,13 +80,21 @@ public class Student {
    }
    
    public void printCurrentCourses() {
-      String tableOutput =  "+------------------------------------------------" +
-              "------------------------------------------------------+";
+      //todo: output column descriptions in table format
+      String tableOutput = "+------+------+--------------------------------" +
+              "---------+-------+---+---------------------+------------+";
+
+      //StringBuilder sb = new StringBuilder();
+
       if (!currentCourses.isEmpty()) {
+         System.out.println("+-------------+\n" +
+                            "|   Schedule  |");
+
          System.out.println(tableOutput);
          for (Course c : currentCourses) {
-            System.out.println(c.toString() + "\n" + tableOutput);
+            System.out.println(c.toString());
          }
+         System.out.println(tableOutput);
       }
       else {
          System.out.println("\n+-------------------------------------+\n" +

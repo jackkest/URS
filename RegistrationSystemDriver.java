@@ -85,7 +85,7 @@ public class RegistrationSystemDriver {
             return new String(pswd);
          }
          else{
-            System.out.println("Console null, please use this application in the command line or terminal.");
+            System.out.println("Could not connect to console, please use this application in the command line or terminal.");
             System.exit(1);
          }
       }
@@ -147,7 +147,7 @@ public class RegistrationSystemDriver {
          
             if (!resultSet.next()) {
                System.out.println("\nIncorrect Login information, please try again.");
-               continue;
+               continue;   // is this necessary?
             } else {
                resultSet.first();   // if the result set is not empty, roll the cursor back one row
                clearConsole();
@@ -155,7 +155,7 @@ public class RegistrationSystemDriver {
             }
          }
       
-            // code to construct student object with result set
+         // code to construct student object with result set
          if(isStudent) {
             studentUser =  new Student(resultSet.getInt("uid"), resultSet.getString("firstName"),
                     resultSet.getString("lastName"), resultSet.getString("major"),
@@ -165,7 +165,7 @@ public class RegistrationSystemDriver {
             System.out.println("+-----------------------------+\n" +
                                "| Student Registration System |\n" +
                                "+-----------------------------+\n");
-            System.out.println("Welcome, " + studentUser.getFirstName()
+            System.out.println("- Welcome, " + studentUser.getFirstName()
                                  + " " + studentUser.getLastName() + "\n\n");
             String query = "SELECT Course_crn FROM studentToCourse WHERE Student_uid = ?";
          
@@ -265,7 +265,7 @@ public class RegistrationSystemDriver {
       System.out.println("+-----------------------------+\n| Student" +
               " Registration System |\n+----------------------------" +
               "-+\n|     Professor Panel      |\n+--------------------------+\n");
-      System.out.println("Welcome, " + profUser.getFirstName()
+      System.out.println("- Welcome, " + profUser.getFirstName()
               + " " + profUser.getLastName() + "\n\n");
    
       for(Course c: profUser.getCourses())
@@ -281,26 +281,50 @@ public class RegistrationSystemDriver {
       while(!s.toUpperCase().equals("LOGOUT")) {
          try {
             if(s.toUpperCase().equals("CLASSLIST")) {
-            
+
                System.out.print("Please choose a CRN: ");
                int crn = scan.nextInt();
             
-               ArrayList<Course> courses = profUser.getCourses();
-               
-               String query = "SELECT crn, creditHours, courseName, courseSubject, " +
-                             "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course WHERE crn = ?";
-               PreparedStatement courseMatch = db.prepareStatement(query);
-               courseMatch.setInt(1, crn);
+               Course toAddStudent = profUser.getCourseFromCRN(crn);
+
+               if(toAddStudent == null){
+                  System.out.print("\n******Invalid CRN Entry, Try again******\n\n");
+                  continue;
+               }
+
+               // profUser course list has been populated (login), we need to get each student enrolled in the course.
+
+               // Find the students
+               String studentMatchQuery = "SELECT Student_uid FROM studentToCourse WHERE Course_crn = ?";
+
+               PreparedStatement studentMatch = db.prepareStatement(studentMatchQuery);
+               studentMatch.setInt(1, crn);
                   
-               if (courseMatch.execute()) { // if CRN is found then print the classList for the course
-                  ResultSet course = courseMatch.getResultSet();
-                  Course c = new Course(course.getInt("crn"), course.getInt("creditHours"),
-                             course.getString("courseName"), course.getString("courseSubject"),
-                             course.getInt("courseNumber"), course.getString("classTime"),
-                             course.getInt("instructorID"), course.getString("instructMethod"),
-                             course.getString("courseLocation"));
-                  
-                  profUser.printClassList(c);
+               if (studentMatch.execute()) {
+                  ResultSet enrolled = studentMatch.getResultSet();  // empty set effectively handled in professor class to prevent cursor error
+
+                  // construct each student object
+                  while(enrolled.next()){
+                     int studentID = enrolled.getInt("Student_uid");
+                     String studentQuery = "SELECT uid, firstName, lastName, major, totalCreditHours, currentGPA, userName FROM student WHERE uid = ?";
+                     PreparedStatement getStudent = db.prepareStatement(studentQuery);
+                     getStudent.setInt(1, studentID);
+
+                     if(getStudent.execute()){
+                        ResultSet studentData = getStudent.getResultSet();
+
+                        if(studentData.next()){
+                           Student matched = new Student(studentData.getInt("uid"), studentData.getString("firstName"),
+                                   studentData.getString("lastName"), studentData.getString("major"),
+                                   studentData.getInt("totalCreditHours"), studentData.getFloat("currentGPA"));
+
+                           if(toAddStudent != null){
+                              toAddStudent.add(matched);
+                           }
+                        }
+                     }
+                  }
+                  profUser.printClassList(toAddStudent); // finally, add the constructed student to the class list
                }
                else {
                   System.out.println("Invalid CRN. Unable to print class list.");
@@ -308,7 +332,6 @@ public class RegistrationSystemDriver {
             }
             
             else {
-               clearConsole();
                System.out.print("----------------------------------------\n" +
                              "****Invalid choice. Please try again****\n" +
                               "----------------------------------------\n");
@@ -328,7 +351,7 @@ public class RegistrationSystemDriver {
 
    public static void studentPanel(Scanner scannerIn, Connection db){
       Scanner scan = scannerIn;
-      studentUser.printCurrentCourses(); // Not sure if this is needed here still.
+      studentUser.printCurrentCourses();
    
       showOptions(isStudent);
       String s = scan.next();
@@ -343,7 +366,12 @@ public class RegistrationSystemDriver {
                     "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course";
                Statement stmt = db.createStatement();
                ResultSet coursesAvailable = stmt.executeQuery(query);
-            
+
+               String tableOutput =  "+------+------+-----+--------------------------" +
+                       "---------+-------+---+---------------------+------------+";
+               System.out.println("\n+-------------------+\n" +
+                                    "| Available Courses |\n" + tableOutput);
+
                while(coursesAvailable.next()){
                   Course c = new Course(coursesAvailable.getInt("crn"), coursesAvailable.getInt("creditHours"),
                        coursesAvailable.getString("courseName"), coursesAvailable.getString("courseSubject"),
@@ -352,11 +380,14 @@ public class RegistrationSystemDriver {
                        coursesAvailable.getString("courseLocation"));
                   
                   // If student is not enrolled, It is a course that they can add
+
+                  //todo: checkEnrollment still doesn't work, even with .equals() implemented??, add case if no courses are available
+
                   if (!studentUser.checkEnrollment(c)) {
                      System.out.println(c.toString());
                   }
                }
-               
+               System.out.println(tableOutput + "\n");
                System.out.println("\n\n");
                
                System.out.print("Please input the CRN for the class you want to add: ");
