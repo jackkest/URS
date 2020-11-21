@@ -8,7 +8,7 @@ public class Course {
    private String courseSubject;
    private int courseNumber;
    private String classTime;
-   private Professor instructor; // todo: set this in it's own method
+   private Professor instructor;
    private int instructorID;
    private String instructMethod;
    private String courseLocation;

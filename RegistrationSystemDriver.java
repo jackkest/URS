@@ -185,10 +185,8 @@ public class RegistrationSystemDriver {
                System.exit(1);   // 1 == problem
             }
          
-            if (!resultSet.next()) {      // the student isn't currently enrolled in any courses
-               System.out.println("\n+-------------------------------------+\n" +
-                                    "|        No Courses to display        |\n" +
-                                    "+-------------------------------------+\n");
+            if (!resultSet.next()) {
+               //printing used to be here, but caused duplicates. Solution was removing
             }
             else {
                resultSet.beforeFirst();   // if the result set is not empty, roll the cursor back to before first entry
@@ -329,6 +327,8 @@ public class RegistrationSystemDriver {
                      }
                   }
                   System.out.println();
+                  clearConsole();
+                  profUser.printCourses();
                   profUser.printClassList(toAddStudent);
                }
                else {
@@ -387,8 +387,6 @@ public class RegistrationSystemDriver {
                        coursesAvailable.getString("courseLocation"));
 
                   // we've just generated the available courses, these can be saved and used for adding
-                  
-                  // If student is not enrolled, It is a course that they can add
                   //todo: add case if no courses are available
 
                   if (!studentUser.checkEnrollment(c)) {
@@ -397,7 +395,6 @@ public class RegistrationSystemDriver {
                   }
                }
                System.out.println(tableOutput + "\n");
-               System.out.println("\n\n");
                
                System.out.print("Please input the CRN for the class you want to add: ");
                int crn = scan.nextInt();
@@ -424,12 +421,14 @@ public class RegistrationSystemDriver {
                         String out = "+------+------+--------------------------------" +
                                 "---------+-------+---+---------------------+------------+";
 
-                        //todo: print schedule here instead of course toString
-                        System.out.println("\nCOURSE ADDED TO SCHEDULE:\n"
-                                + out + "\n" + toSearch.toString() + "\n" + out + "\n");
+                        clearConsole();
+                        System.out.println("+--------------------------+\n" +
+                                           "| COURSE ADDED TO SCHEDULE |\n" + toSearch.getCourseHeader() + "\n");
+                        studentUser.printCurrentCourses();
                         thirdCase = false;
                         showOptions(isStudent);
                         s = scan.next();
+                        break;
                      }
                      else {
                         System.out.println("Course already added.");
@@ -440,6 +439,7 @@ public class RegistrationSystemDriver {
                   }
                }
                if(thirdCase){
+                  clearConsole();
                   System.out.println("\n***Invalid CRN. Unable to add class to schedule***");
                   continue;
                }
@@ -448,40 +448,40 @@ public class RegistrationSystemDriver {
                }
             }
          
-            if (s.toUpperCase().equals("DROP")) {
+            if (s.toUpperCase().equals("DROP")) {  //todo: handle case -> if student isn't currently enrolled in any classes, they cant drop
+               boolean wasRemoved = false;
                System.out.print("Please input the CRN for the class you want to drop: ");
                int crn = scan.nextInt();
                ArrayList<Course> courses = studentUser.getCurrentCourses();
                Enrollment e = new Enrollment(courses.size(), courses, studentUser);
-            
-               String query = "SELECT crn, creditHours, courseName, courseSubject, " +
-                             "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course WHERE crn = ?";
-               PreparedStatement courseMatch = db.prepareStatement(query);
-               courseMatch.setInt(1, crn);
-                  
-               if (courseMatch.execute()) { // if CRN is found then remove the course
-                  ResultSet course = courseMatch.getResultSet();
-                  Course c = new Course(course.getInt("crn"), course.getInt("creditHours"),
-                             course.getString("courseName"), course.getString("courseSubject"),
-                             course.getInt("courseNumber"), course.getString("classTime"),
-                             course.getInt("instructorID"), course.getString("instructMethod"),
-                             course.getString("courseLocation"));
-                  
-                  e.dropCourse(c, studentUser);
-                  String out = "+------+------+--------------------------------" +
-                          "---------+-------+---+---------------------+------------+";
-                  System.out.println("COURSE REMOVED FROM SCHEDULE:\n" + out + c.toString() + "\n" + out + "\n");
+
+               for(Course toSearch: studentUser.getCurrentCourses()){
+                  if(toSearch.getCRN() == crn){ // the course was found in student's current courses, they can drop it
+                     wasRemoved = true;
+                     e.dropCourse(toSearch, studentUser);
+
+                     String deleteString = "DELETE FROM studentToCourse WHERE Student_uid = ? AND Course_crn = ?";
+                     PreparedStatement deleteStatement = db.prepareStatement(deleteString);
+                     deleteStatement.setInt(1, studentUser.getUID());
+                     deleteStatement.setInt(2, crn);
+                     deleteStatement.executeUpdate();
+
+                     clearConsole();
+                     System.out.println("+------------------------------+\n" +
+                                        "| COURSE REMOVED FROM SCHEDULE | \n" + toSearch.getCourseHeader() + "\n");
+                     studentUser.printCurrentCourses();
+                     break;   // prevent concurrent modification
+                  }
                }
-               else {
+               if(!wasRemoved){
                   System.out.println("Invalid CRN. Unable to drop class from schedule.");
                }
             }
             
             else {
-               clearConsole();
-               System.out.print("----------------------------------------\n" +
-                             "****Invalid choice. Please try again****\n" +
-                              "----------------------------------------\n");
+               System.out.print("\n+--------------------------------------+\n" +
+                                  "|***Invalid choice. Please try again***|\n" +
+                                  "+--------------------------------------+\n");
             }
          }
          catch(SQLException ex) {

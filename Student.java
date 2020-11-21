@@ -97,9 +97,11 @@ public class Student {
          System.out.println(tableOutput);
       }
       else {
-         System.out.println("\n+-------------------------------------+\n" +
-                              "|        No Courses to display        |\n" +
-                              "+-------------------------------------+\n");
+         System.out.println("+-------------+\n" +
+                            "|   Schedule  |\n" +
+                            "+-------------------------------------+\n" +
+                            "|        No Courses to display        |\n" +
+                            "+-------------------------------------+\n");
       }
    }
    

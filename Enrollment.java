@@ -20,8 +20,7 @@ public class Enrollment {
    
    public boolean addCourse(Course c, Student s) {
       if(s.addCourse(c)){
-         numberOfCourses++;
-         courses.add(c);
+         numberOfCourses++;   // because of way enrollment object is constructed, adding creates duplicate records
          return true;
       }
       return false;
