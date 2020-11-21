@@ -27,7 +27,15 @@ public class Course {
       courseLocation = courseLocationIn;
       classList = new ArrayList<Student>();
    }
-   
+
+   public int getCRN(){
+      return crn;
+   }
+
+   public int getInstructorID(){
+      return instructorID;
+   }
+
    public void add(Student s) {
       classList.add(s);
    }
@@ -40,28 +48,6 @@ public class Course {
       instructor = p;
    }
 
-   public int getCRN(){
-      return crn;
-   }
-
-   @Override
-   public boolean equals(Object o){ // need this for checking enrollment
-      if(!(o instanceof Course)){
-         return false;
-      }
-      //typecast for comparison
-      Course c = (Course) o;
-
-      return c.crn == crn && c.creditHours == creditHours   // if any one is false, they are not equal.
-              && c.courseName == courseName && c.courseNumber == courseNumber
-              && c.classTime == classTime && c.instructorID == instructorID
-              && c.instructMethod == instructMethod && c.courseLocation == courseLocation;
-   }
-
-   public int getInstructorID(){
-      return instructorID;
-   }
-   
    public Professor getInstructor() {
       return instructor;
    }
@@ -82,9 +68,8 @@ public class Course {
    }
    
    public String toString() {
-
       StringBuilder sb = new StringBuilder();
-      //todo: format classtime by delineating w/ comma
+
       String[] date = classTime.split("\\.");
       date[1] = date[1].substring(0, 2) + ":" + date[1].substring(2);
 

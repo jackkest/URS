@@ -65,18 +65,24 @@ public class Professor {
    }
    
    public void printClassList(Course c) {
-      System.out.println("\n" + c.getCourseHeader() + "\n");
-      
+      String tableOutput = "+-----------+-----------+------+";
+      System.out.println(c.getCourseHeader() + "\n");
       ArrayList<Student> classList = c.getClassList();
 
-      if(classList.isEmpty())
+      if(classList.isEmpty()) {
          System.out.println("+----------------------+\n" +
                             "| No Students Enrolled |\n" +
-                            "+----------------------+");
-
-      for (Student s : classList) {
-         System.out.println(s.toString());
+                            "+----------------------+\n");
+         return;
       }
+
+      System.out.println("+-----------+-----------+\n" +
+                         "|   Enrolled Students   |");
+      System.out.println(tableOutput);
+      for (Student s : classList) {
+         System.out.print(s.toString() + "\n");
+      }
+      System.out.println(tableOutput + "\n");
    }
 
    public void addCourse(Course c){

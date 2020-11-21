@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,6 +21,7 @@ public class RegistrationSystemDriver {
    private static String passWord;
    private static Student studentUser;
    private static Professor profUser;
+   private static ArrayList<Course> available;
    private static boolean isStudent = true; // if it is a student, then it is not a professor
 
    public static void main(String[] args) {
@@ -122,7 +124,10 @@ public class RegistrationSystemDriver {
          String dbQuery = null;
          while (true) {
          
-            System.out.print("\n+-----------+\n|   Login   |\n+-----------+\nUsername: ");
+            System.out.print("\n+-----------+\n" +
+                               "|   Login   |\n" +
+                               "+-----------+\n" +
+                               "Username: ");
             userName = input.nextLine();
             passWord = getPassWord();
          
@@ -147,7 +152,6 @@ public class RegistrationSystemDriver {
          
             if (!resultSet.next()) {
                System.out.println("\nIncorrect Login information, please try again.");
-               continue;   // is this necessary?
             } else {
                resultSet.first();   // if the result set is not empty, roll the cursor back one row
                clearConsole();
@@ -206,7 +210,8 @@ public class RegistrationSystemDriver {
                              schedule.getInt("courseNumber"), schedule.getString("classTime"),
                              schedule.getInt("instructorID"), schedule.getString("instructMethod"),
                              schedule.getString("courseLocation"));
-                  
+
+
                      studentUser.addCourse(c);
                   }
                   schedule.close();
@@ -293,7 +298,6 @@ public class RegistrationSystemDriver {
                }
 
                // profUser course list has been populated (login), we need to get each student enrolled in the course.
-
                // Find the students
                String studentMatchQuery = "SELECT Student_uid FROM studentToCourse WHERE Course_crn = ?";
 
@@ -319,22 +323,24 @@ public class RegistrationSystemDriver {
                                    studentData.getInt("totalCreditHours"), studentData.getFloat("currentGPA"));
 
                            if(toAddStudent != null){
-                              toAddStudent.add(matched);
+                              toAddStudent.add(matched); // finally, add the constructed student to the class list
                            }
                         }
                      }
                   }
-                  profUser.printClassList(toAddStudent); // finally, add the constructed student to the class list
+                  System.out.println();
+                  profUser.printClassList(toAddStudent);
                }
                else {
-                  System.out.println("Invalid CRN. Unable to print class list.");
+                  System.out.println("Database Error, exiting...");
+                  System.exit(1);
                }
             }
-            
+
             else {
-               System.out.print("----------------------------------------\n" +
-                             "****Invalid choice. Please try again****\n" +
-                              "----------------------------------------\n");
+               System.out.print("\n+--------------------------------------+\n" +
+                                  "|***Invalid choice. Please try again***|\n" +
+                                  "+--------------------------------------+\n");
             }
          }
          catch(SQLException ex) {
@@ -357,11 +363,10 @@ public class RegistrationSystemDriver {
       String s = scan.next();
    
       while(!s.toUpperCase().equals("LOGOUT")) {
-         
          try {
             if (s.toUpperCase().equals("ADD")) {
             
-            // PRINT AVAILABLE COURSES
+               // PRINT AVAILABLE COURSES
                String query = "SELECT crn, creditHours, courseName, courseSubject, " +
                     "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course";
                Statement stmt = db.createStatement();
@@ -372,18 +377,22 @@ public class RegistrationSystemDriver {
                System.out.println("\n+-------------------+\n" +
                                     "| Available Courses |\n" + tableOutput);
 
+               available = new ArrayList<Course>();
+
                while(coursesAvailable.next()){
                   Course c = new Course(coursesAvailable.getInt("crn"), coursesAvailable.getInt("creditHours"),
                        coursesAvailable.getString("courseName"), coursesAvailable.getString("courseSubject"),
                        coursesAvailable.getInt("courseNumber"), coursesAvailable.getString("classTime"),
                        coursesAvailable.getInt("instructorID"), coursesAvailable.getString("instructMethod"),
                        coursesAvailable.getString("courseLocation"));
+
+                  // we've just generated the available courses, these can be saved and used for adding
                   
                   // If student is not enrolled, It is a course that they can add
-
-                  //todo: checkEnrollment still doesn't work, even with .equals() implemented??, add case if no courses are available
+                  //todo: add case if no courses are available
 
                   if (!studentUser.checkEnrollment(c)) {
+                     available.add(c);
                      System.out.println(c.toString());
                   }
                }
@@ -392,41 +401,46 @@ public class RegistrationSystemDriver {
                
                System.out.print("Please input the CRN for the class you want to add: ");
                int crn = scan.nextInt();
+
                ArrayList<Course> courses = studentUser.getCurrentCourses();
                Enrollment e = new Enrollment(courses.size(), courses, studentUser);
-            
-               //todo: fix sqlexception
-               query = "SELECT crn, creditHours, courseName, courseSubject, " +
-                             "courseNumber, classTime, instructorID, instructMethod, courseLocation FROM course WHERE crn = ?";
-               PreparedStatement courseMatch = db.prepareStatement(query);
-               courseMatch.setInt(1, crn);
-                  
-               if (courseMatch.execute()) { // if CRN is found then add the course
-                  ResultSet course = courseMatch.getResultSet();
-                  Course c = new Course(course.getInt("crn"), course.getInt("creditHours"),
-                             course.getString("courseName"), course.getString("courseSubject"),
-                             course.getInt("courseNumber"), course.getString("classTime"),
-                             course.getInt("instructorID"), course.getString("instructMethod"),
-                             course.getString("courseLocation"));
-                  
-                  boolean isAdded = e.addCourse(c, studentUser);
-                  if (isAdded) {
-                     System.out.println("COURSE ADDED TO SCHEDULE:");
-                     System.out.println(c.toString());
-                  }
-                  
-                  else {
-                     System.out.println("Class already added.");
+
+               boolean thirdCase = true;  // the course was not found in the available set -> invalid choice
+               boolean forthCase = false;
+
+               //todo: fix sqlexception, implement check for conflicting dates
+               for(Course toSearch : available){
+                  if(toSearch.getCRN() == crn){
+                     boolean isAdded = e.addCourse(toSearch, studentUser);
+
+                     if (isAdded) {
+                        // todo: code to add course, studentid to studentToCourse
+                        System.out.println("COURSE ADDED TO SCHEDULE:");
+                        System.out.println(toSearch.toString());
+                        thirdCase = false;
+                        showOptions(isStudent);
+                        s = scan.next();
+                        forthCase = true;
+                     }
+                     else {
+                        System.out.println("Course already added.");
+                        thirdCase = false;
+                        showOptions(isStudent);
+                        s = scan.next();
+                        forthCase = true;
+                     }
                   }
                }
-               
-               else {
+               if(thirdCase){
                   System.out.println("Invalid CRN. Unable to add class to schedule.");
+                  continue;
+               }
+               if(forthCase){
+                  continue; // I am legit confused why this is needed???? something to do with the scanner, but using a different scanner doesn't work!!??!
                }
             }
          
             if (s.toUpperCase().equals("DROP")) {
-            
                System.out.print("Please input the CRN for the class you want to drop: ");
                int crn = scan.nextInt();
                ArrayList<Course> courses = studentUser.getCurrentCourses();
@@ -450,7 +464,6 @@ public class RegistrationSystemDriver {
                   System.out.println("COURSE REMOVED FROM SCHEDULE:");
                   System.out.println(c.toString());
                }
-               
                else {
                   System.out.println("Invalid CRN. Unable to drop class from schedule.");
                }

@@ -7,17 +7,11 @@ public class Student {
    private String lastName;
    private String major;
    private ArrayList<Course> currentCourses;
+   private ArrayList<Integer> enrolled;
    private ArrayList<Course> allCourses;
    private int totalCreditHours;
    private float currentGPA;
-   
-   public Student(int uidIn, String firstNameIn, String lastNameIn, String majorIn) {
-      uid = uidIn;
-      firstName = firstNameIn;
-      lastName = lastNameIn;
-      major = majorIn;
-   }
-   
+
    public Student(int uidIn, String firstNameIn, String lastNameIn, String majorIn,
       int totalCreditHoursIn, float currentGPAIn) {
       uid = uidIn;
@@ -27,6 +21,7 @@ public class Student {
       totalCreditHours = totalCreditHoursIn;
       currentGPA = currentGPAIn;
       currentCourses = new ArrayList<Course>();
+      enrolled = new ArrayList<Integer>();
    }
    
    public int getUID() {
@@ -62,17 +57,22 @@ public class Student {
    }
    
    public boolean checkEnrollment(Course c) {
-      boolean test = currentCourses.contains(c); //testing
-      System.out.println(test);
-      return test;
-   }
-   
-   public boolean addCourse(Course c) {
-      if (!currentCourses.contains(c)) {
-         currentCourses.add(c);
-         return true;
+      for(Course toCheck : currentCourses){
+         if(toCheck.getCRN() == c.getCRN()){ // all we need to compare is the CRN since it is a unique identifier
+            return true;
+         }
       }
       return false;
+   }
+
+   public boolean addCourse(Course c) {
+      for(Course toSearch : currentCourses){
+         if(toSearch.getCRN() == c.getCRN()){   // if the course is found in currentCourses, they cannot add it
+            return false;
+         }
+      }
+      currentCourses.add(c);
+      return true;
    }
    
    public void removeCourse(Course c) {
@@ -104,7 +104,11 @@ public class Student {
    }
    
    public String toString() {
-      String s = firstName + " " + lastName + " | Banner ID: " + uid;
-      return s;
+
+      StringBuilder sb = new StringBuilder();
+      sb.append(String.format("| %-10s", firstName));
+      sb.append(String.format("| %-10s", lastName));
+      sb.append(String.format("| %-5s", uid) + "|");
+      return sb.toString();
    }
 }
