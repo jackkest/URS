@@ -70,6 +70,9 @@ public class Student {
          if(toSearch.getCRN() == c.getCRN()){   // if the course is found in currentCourses, they cannot add it
             return false;
          }
+         else if(toSearch.checkConflictingDate(c)){
+            return false;
+         }
       }
       currentCourses.add(c);
       return true;

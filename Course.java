@@ -32,6 +32,10 @@ public class Course {
       return crn;
    }
 
+   public String getClassTime(){
+      return classTime;
+   }
+
    public int getInstructorID(){
       return instructorID;
    }
@@ -54,6 +58,10 @@ public class Course {
    
    public ArrayList<Student> getClassList(){
       return classList;
+   }
+
+   public boolean checkConflictingDate(Course c){
+      return classTime.equals(c.getClassTime());
    }
    
    public String getCourseHeader() {
