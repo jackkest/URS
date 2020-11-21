@@ -267,9 +267,11 @@ public class RegistrationSystemDriver {
    public static void professorPanel(Scanner scannerIn, Connection db){
       Scanner scan = scannerIn;
    
-      System.out.println("+-----------------------------+\n| Student" +
-              " Registration System |\n+----------------------------" +
-              "-+\n|     Professor Panel      |\n+--------------------------+\n");
+      System.out.println("+-----------------------------+\n" +
+                         "| Student Registration System |\n" +
+                         "+-----------------------------+\n" +
+                         "|     Professor Panel      |\n" +
+                         "+--------------------------+\n");
       System.out.println("- Welcome, " + profUser.getFirstName()
               + " " + profUser.getLastName() + "\n\n");
    
@@ -278,8 +280,7 @@ public class RegistrationSystemDriver {
          c.setInstructor(profUser);    // professors can only see classes they teach, therefore we can assume they are the teacher
       }
       
-      profUser.printCourses(); // Not sure if this is needed here still.
-   
+      profUser.printCourses();
       showOptions(isStudent);
       String s = scan.next();
    
@@ -300,7 +301,6 @@ public class RegistrationSystemDriver {
                // profUser course list has been populated (login), we need to get each student enrolled in the course.
                // Find the students
                String studentMatchQuery = "SELECT Student_uid FROM studentToCourse WHERE Course_crn = ?";
-
                PreparedStatement studentMatch = db.prepareStatement(studentMatchQuery);
                studentMatch.setInt(1, crn);
                   
@@ -406,37 +406,45 @@ public class RegistrationSystemDriver {
                Enrollment e = new Enrollment(courses.size(), courses, studentUser);
 
                boolean thirdCase = true;  // the course was not found in the available set -> invalid choice
-               boolean forthCase = false;
 
-               //todo: fix sqlexception, implement check for conflicting dates
+               //todo: implement check for conflicting dates
                for(Course toSearch : available){
                   if(toSearch.getCRN() == crn){
                      boolean isAdded = e.addCourse(toSearch, studentUser);
 
                      if (isAdded) {
-                        // todo: code to add course, studentid to studentToCourse
-                        System.out.println("COURSE ADDED TO SCHEDULE:");
-                        System.out.println(toSearch.toString());
+                        String insertString = "INSERT INTO studentToCourse VALUES(?,?)";
+
+                        PreparedStatement insertStatement = db.prepareStatement(insertString);
+                        insertStatement.setInt(1, studentUser.getUID());
+                        insertStatement.setInt(2, crn);
+
+                        insertStatement.executeUpdate();
+
+                        String out = "+------+------+--------------------------------" +
+                                "---------+-------+---+---------------------+------------+";
+
+                        //todo: print schedule here instead of course toString
+                        System.out.println("\nCOURSE ADDED TO SCHEDULE:\n"
+                                + out + "\n" + toSearch.toString() + "\n" + out + "\n");
                         thirdCase = false;
                         showOptions(isStudent);
                         s = scan.next();
-                        forthCase = true;
                      }
                      else {
                         System.out.println("Course already added.");
                         thirdCase = false;
                         showOptions(isStudent);
                         s = scan.next();
-                        forthCase = true;
                      }
                   }
                }
                if(thirdCase){
-                  System.out.println("Invalid CRN. Unable to add class to schedule.");
+                  System.out.println("\n***Invalid CRN. Unable to add class to schedule***");
                   continue;
                }
-               if(forthCase){
-                  continue; // I am legit confused why this is needed???? something to do with the scanner, but using a different scanner doesn't work!!??!
+               if(!thirdCase){
+                  continue;
                }
             }
          
@@ -460,9 +468,9 @@ public class RegistrationSystemDriver {
                              course.getString("courseLocation"));
                   
                   e.dropCourse(c, studentUser);
-                  
-                  System.out.println("COURSE REMOVED FROM SCHEDULE:");
-                  System.out.println(c.toString());
+                  String out = "+------+------+--------------------------------" +
+                          "---------+-------+---+---------------------+------------+";
+                  System.out.println("COURSE REMOVED FROM SCHEDULE:\n" + out + c.toString() + "\n" + out + "\n");
                }
                else {
                   System.out.println("Invalid CRN. Unable to drop class from schedule.");

@@ -46,15 +46,17 @@ public class Professor {
    }
    
    public void printCourses() {
-      String tableOutput =  "+------+------+--------------------------------" +
+      String tableHeader = "+--------------+\n" +
+                           "| Your Courses |";
+      String tableOutput =  "+------+------++-------------------------------" +
               "---------+-------+---+---------------------+------------+";
 
       if (!courses.isEmpty()) {
-         System.out.println(tableOutput);
+         System.out.println(tableHeader + "\n" + tableOutput);
          for (Course c : courses) {
             System.out.println(c.toString());
          }
-         System.out.println(tableOutput);
+         System.out.println(tableOutput + "\n");
       }
       
       else {
