@@ -28,10 +28,6 @@ public class Professor {
       return lastName;
    }
    
-   public String getDepartment() {
-      return department;
-   }
-   
    public ArrayList<Course> getCourses() {
       return courses;
    }

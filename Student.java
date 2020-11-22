@@ -7,8 +7,6 @@ public class Student {
    private String lastName;
    private String major;
    private ArrayList<Course> currentCourses;
-   private ArrayList<Integer> enrolled;
-   private ArrayList<Course> allCourses;
    private int totalCreditHours;
    private float currentGPA;
 
@@ -21,7 +19,6 @@ public class Student {
       totalCreditHours = totalCreditHoursIn;
       currentGPA = currentGPAIn;
       currentCourses = new ArrayList<Course>();
-      enrolled = new ArrayList<Integer>();
    }
    
    public int getUID() {
@@ -36,24 +33,8 @@ public class Student {
       return lastName;
    }
    
-   public String getMajor() {
-      return major;
-   }
-   
    public ArrayList<Course> getCurrentCourses() {
       return currentCourses;
-   }
-
-   public ArrayList<Course> getAllCourses() {
-      return allCourses;
-   }
-
-   public int getCreditHours() {
-      return totalCreditHours;
-   }
-   
-   public float getGPA() {
-      return currentGPA;
    }
    
    public boolean checkEnrollment(Course c) {
@@ -97,7 +78,7 @@ public class Student {
          for (Course c : currentCourses) {
             System.out.println(c.toString());
          }
-         System.out.println(tableOutput);
+         System.out.println(tableOutput + "\n");
       }
       else {
          System.out.println("+-------------+\n" +

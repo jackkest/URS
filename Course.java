@@ -51,15 +51,12 @@ public class Course {
    public void setInstructor(Professor p) {
       instructor = p;
    }
-
-   public Professor getInstructor() {
-      return instructor;
-   }
    
    public ArrayList<Student> getClassList(){
       return classList;
    }
 
+   //todo: use actual string manipulation to check conflicts?
    public boolean checkConflictingDate(Course c){
       return classTime.equals(c.getClassTime());
    }

@@ -6,9 +6,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.PreparedStatement;
-import java.util.Scanner;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.math.BigInteger;
@@ -105,8 +103,8 @@ public class RegistrationSystemDriver {
       Scanner input = new Scanner(System.in);
    
       while(true) {
-         System.out.print("Please chose an option:\n\n(1): Student\n(2): Professor\n\nChoice: ");
-         int choice = input.nextInt();
+         String opt = "Please chose an option:\n\n(1): Student\n(2): Professor\n\nChoice: ";
+         int choice = checkMismatch(input, opt);
       
          if (choice == 1) {
             break;
@@ -287,8 +285,8 @@ public class RegistrationSystemDriver {
          try {
             if(s.toUpperCase().equals("CLASSLIST")) {
 
-               System.out.print("Please choose a CRN: ");
-               int crn = scan.nextInt();
+               String crnChoice = "Please choose a CRN: ";
+               int crn = checkMismatch(scan, crnChoice);
             
                Course toAddStudent = profUser.getCourseFromCRN(crn);
 
@@ -395,12 +393,12 @@ public class RegistrationSystemDriver {
                   }
                }
                System.out.println(tableOutput + "\n");
-               
-               System.out.print("Please input the CRN for the class you want to add: ");
-               int crn = scan.nextInt();
+
+               String choice = "Please input the CRN for the class you want to add: ";
+               int crn = checkMismatch(scan, choice);
 
                ArrayList<Course> courses = studentUser.getCurrentCourses();
-               Enrollment e = new Enrollment(courses.size(), courses, studentUser);
+               Enrollment e = new Enrollment(courses, studentUser);
 
                boolean thirdCase = true;  // the course was not found in the available set -> invalid choice
 
@@ -450,10 +448,11 @@ public class RegistrationSystemDriver {
             if (s.toUpperCase().equals("DROP")) {
                if (!studentUser.getCurrentCourses().isEmpty()) {
                   boolean wasRemoved = false;
-                  System.out.print("Please input the CRN for the class you want to drop: ");
-                  int crn = scan.nextInt();
+                  String choice = "Please input the CRN for the class you want to drop: ";
+                  int crn = checkMismatch(scan, choice);
+
                   ArrayList<Course> courses = studentUser.getCurrentCourses();
-                  Enrollment e = new Enrollment(courses.size(), courses, studentUser);
+                  Enrollment e = new Enrollment(courses, studentUser);
 
                   for (Course toSearch : studentUser.getCurrentCourses()) {
                      if (toSearch.getCRN() == crn) { // the course was found in student's current courses, they can drop it
@@ -540,5 +539,24 @@ public class RegistrationSystemDriver {
             c.setInstructor(instructor);
          }
       }
+   }
+
+   public static int checkMismatch(Scanner scannerIn, String prompt){
+      boolean done = false;
+      int toReturn = 0;
+      System.out.print(prompt);
+
+      while(!done){
+         try{
+            toReturn = scannerIn.nextInt();
+            done = true;
+         }
+         catch(InputMismatchException ime){
+            String clearBuf = scannerIn.nextLine();
+            System.out.println("\n*** Invalid Entry, Try again ***\n");
+            System.out.print(prompt);
+         }
+      }
+      return toReturn;
    }
 }

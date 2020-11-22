@@ -1,15 +1,12 @@
 import java.util.ArrayList;
 
 public class Enrollment {
-   
-   private int numberOfCourses;
+
    private ArrayList<Course> courses;
    private Student student;
-   
-   // to-do: implement checkEligibility()
-   
-   public Enrollment(int numberOfCoursesIn, ArrayList<Course> coursesIn, Student studentIn) {
-      numberOfCourses = numberOfCoursesIn;
+
+
+   public Enrollment(ArrayList<Course> coursesIn, Student studentIn) {
       courses = coursesIn;
       student = studentIn;
    }
@@ -19,15 +16,11 @@ public class Enrollment {
    }
    
    public boolean addCourse(Course c, Student s) {
-      if(s.addCourse(c)){
-         numberOfCourses++;   // because of way enrollment object is constructed, adding creates duplicate records
-         return true;
-      }
-      return false;
+         // because of way enrollment object is constructed, adding here creates duplicate records
+      return s.addCourse(c);
    }
    
    public void dropCourse(Course c, Student s){
-      numberOfCourses--;
       courses.remove(c);
       
       c.drop(s); // Remove student from the course
