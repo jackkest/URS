@@ -372,9 +372,9 @@ public class RegistrationSystemDriver {
                ResultSet coursesAvailable = stmt.executeQuery(query);
 
                String tableOutput =  "+------+------+-----+--------------------------" +
-                       "---------+-------+---+---------------------+------------+";
+                       "---------+-------+---------+---------------------+------------+";
                System.out.println("\n+-------------------+\n" +
-                                    "| Available Courses |\n" + tableOutput);
+                                    "| Available Courses |\n" + tableOutput + "\n" + Course.getTableHeader() + "\n" + tableOutput);
 
                available = new ArrayList<Course>();
 

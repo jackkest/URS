@@ -64,17 +64,25 @@ public class Student {
    }
    
    public void printCurrentCourses() {
-      //todo: output column descriptions in table format
       String tableOutput = "+------+------+--------------------------------" +
-              "---------+-------+---+---------------------+------------+";
-
-      //StringBuilder sb = new StringBuilder();
+              "---------+-------+---------+---------------------+------------+";
 
       if (!currentCourses.isEmpty()) {
          System.out.println("+-------------+\n" +
                             "|   Schedule  |");
+         /*
+         StringBuilder sb = new StringBuilder();
+         sb.append(String.format("| %-5s", "SUBJ"));
+         sb.append(String.format("| %-5s", "NUM"));
+         sb.append(String.format("| %-40s", "NAME"));
+         sb.append(String.format("| %-6s", "CRN"));
+         sb.append(String.format("| %-8s", "CREDITS"));
+         sb.append(String.format("| %-20s","CLASSTIME"));
+         sb.append(String.format("| %-10s", "LOCATION") + " |");
 
-         System.out.println(tableOutput);
+          */
+
+         System.out.println(tableOutput + "\n" + Course.getTableHeader() + "\n" + tableOutput);
          for (Course c : currentCourses) {
             System.out.println(c.toString());
          }

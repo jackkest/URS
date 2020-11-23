@@ -45,10 +45,10 @@ public class Professor {
       String tableHeader = "+--------------+\n" +
                            "| Your Courses |";
       String tableOutput =  "+------+------++-------------------------------" +
-              "---------+-------+---+---------------------+------------+";
+              "---------+-------+---------+---------------------+------------+";
 
       if (!courses.isEmpty()) {
-         System.out.println(tableHeader + "\n" + tableOutput);
+         System.out.println(tableHeader + "\n" + tableOutput + "\n" + Course.getTableHeader() + "\n" + tableOutput);
          for (Course c : courses) {
             System.out.println(c.toString());
          }
@@ -73,10 +73,12 @@ public class Professor {
                             "+----------------------+\n");
          return;
       }
-
+      StringBuilder sb = new StringBuilder();
+      sb.append(String.format("| %-10s", "FIRSTNAME"));
+      sb.append(String.format("| %-10s", "LASTNAME"));
+      sb.append(String.format("| %-5s", "ID") + "|");
       System.out.println("+-----------+-----------+\n" +
-                         "|   Enrolled Students   |");
-      System.out.println(tableOutput);
+                         "|   Enrolled Students   |" + "\n" + tableOutput + "\n" + sb.toString() + "\n" + tableOutput);
       for (Student s : classList) {
          System.out.print(s.toString() + "\n");
       }

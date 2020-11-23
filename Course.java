@@ -56,7 +56,6 @@ public class Course {
       return classList;
    }
 
-   //todo: use actual string manipulation to check conflicts?
    public boolean checkConflictingDate(Course c){
       return classTime.equals(c.getClassTime());
    }
@@ -83,10 +82,22 @@ public class Course {
       sb.append(String.format("| %-5s", courseNumber));
       sb.append(String.format("| %-40s", courseName));
       sb.append(String.format("| %-6s", crn));
-      sb.append(String.format("| %-2s", creditHours));
+      sb.append(String.format("| %-8s", creditHours));
       sb.append(String.format("| %-20s", date[0] + " " + date[1]));
       sb.append(String.format("| %-10s", courseLocation) + " |");
 
+      return sb.toString();
+   }
+
+   public static String getTableHeader(){
+      StringBuilder sb = new StringBuilder();
+      sb.append(String.format("| %-5s", "SUBJ"));
+      sb.append(String.format("| %-5s", "NUM"));
+      sb.append(String.format("| %-40s", "NAME"));
+      sb.append(String.format("| %-6s", "CRN"));
+      sb.append(String.format("| %-8s", "CREDITS"));
+      sb.append(String.format("| %-20s","CLASSTIME"));
+      sb.append(String.format("| %-10s", "LOCATION") + " |");
       return sb.toString();
    }
 }
